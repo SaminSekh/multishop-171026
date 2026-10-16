@@ -1,0 +1,25 @@
+{
+  "name": "Shop Online Store",
+  "short_name": "Shop",
+  "description": "Order products online with fast delivery.",
+  "start_url": "./product/index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0f6425",
+  "icons": [
+    {
+      "src": "./assets/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

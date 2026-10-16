@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Settings - Shop Management System</title>
+    <link rel="stylesheet" href="css/style.css?v=11">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="settings-page">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-store"></i> <span id="shopNameHeader">Shop Name</span></h2>
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-role" id="userRole">Shop Admin</div>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+            <!-- Menu items will be loaded dynamically by MenuManager -->
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h3>Shop Settings <span id="shopIdDisplay" class="text-muted"
+                        style="font-size: 0.8rem; font-weight: normal; margin-left: 10px;"></span></h3>
+            </div>
+        </nav>
+
+        <div class="content">
+            <!-- Settings Tabs -->
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="shop-info">Shop Information</button>
+                <button class="tab-btn" data-tab="business">Business Settings</button>
+                <button class="tab-btn" data-tab="pos">POS Settings</button>
+                <button class="tab-btn" data-tab="public-view">Public View Settings</button>
+                <button class="tab-btn" data-tab="notifications">Notifications</button>
+                <button class="tab-btn" data-tab="backup">Backup & Export</button>
+            </div>
+
+            <!-- Shop Information Tab -->
+            <div class="tab-content active" id="shop-info">
+                <div class="settings-card">
+                    <h4><i class="fas fa-store"></i> Shop Details</h4>
+
+                    <form id="shopInfoForm">
+                        <div class="form-group">
+                            <label>Shop Name *</label>
+                            <input type="text" id="shopName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Unique Shop Address (Slug) *</label>
+                            <div class="input-with-action">
+                                <span class="prefix"
+                                    style="padding: 10px; background: #eee; border: 1px solid #ddd; border-right: none; border-radius: 8px 0 0 8px; color: #777; font-size: 0.9rem;">/shop/</span>
+                                <input type="text" id="shopSlug" required placeholder="my-awesome-shop"
+                                    style="border-radius: 0 8px 8px 0; flex: 1;">
+                            </div>
+                            <small class="text-muted">This will be your custom link text. Only letters, numbers, and
+                                dashes allowed.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Shop Address</label>
+                            <textarea id="shopAddress" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="shopPhone">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Your Public Shop Link</label>
+                            <div class="input-with-action">
+                                <input type="text" id="shopPublicLink" readonly placeholder="Loading link...">
+                                <button type="button" class="btn btn-secondary" id="copyLinkBtn" title="Copy Link">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                                <a id="viewShopBtn" href="#" target="_blank" class="btn btn-info" title="View Shop">
+                                    <i class="fas fa-external-link-alt"></i> View
+                                </a>
+                            </div>
+                            <small class="text-muted">Share this link with your customers to show them your
+                                products.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Shop Logo</label>
+                            <div class="logo-upload">
+                                <div class="logo-preview">
+                                    <img id="logoPreview" src="assets/default-shop-logo.png" alt="Shop Logo">
+                                </div>
+                                <div class="logo-actions">
+                                    <button type="button" class="btn btn-sm btn-action" id="uploadLogoBtn" data-tip="Upload Logo">
+                                        <i class="fas fa-upload"></i> Upload Logo
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-action btn-danger" id="removeLogoBtn" data-tip="Remove Logo">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                    <input type="file" id="logoFile" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-action" data-tip="Save Information">
+                            <i class="fas fa-save"></i> Save Information
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Business Settings Tab -->
+            <div class="tab-content" id="business">
+                <div class="settings-card">
+                    <h4><i class="fas fa-business-time"></i> Business Settings</h4>
+
+                    <form id="businessForm">
+                        <div class="form-group">
+                            <label><i class="fas fa-store"></i> Shop Type</label>
+                            <select id="businessType" required disabled>
+                                <option value="general">General Store</option>
+                            </select>
+                            <small style="display: block; margin-top: 6px; color: #64748b; font-size: 0.8rem;">
+                                <i class="fas fa-lock"></i> Shop type is managed by your system administrator. 
+                                It controls which product categories and types are available in your inventory.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Currency *</label>
+                            <select id="shopCurrency" required>
+                                <option value="INR" selected>Indian Rupee (₹)</option>
+                                <option value="USD">US Dollar ($)</option>
+                                <option value="EUR">Euro (€)</option>
+                                <option value="GBP">British Pound (£)</option>
+                                <option value="JPY">Japanese Yen (¥)</option>
+                                <option value="CNY">Chinese Yuan (¥)</option>
+                                <option value="AUD">Australian Dollar (A$)</option>
+                                <option value="CAD">Canadian Dollar (C$)</option>
+                                <option value="CHF">Swiss Franc (CHF)</option>
+                                <option value="HKD">Hong Kong Dollar (HK$)</option>
+                                <option value="SGD">Singapore Dollar (S$)</option>
+                                <option value="SEK">Swedish Krona (kr)</option>
+                                <option value="KRW">South Korean Won (₩)</option>
+                                <option value="PKR">Pakistani Rupee (₨)</option>
+                                <option value="TWD">New Taiwan Dollar (NT$)</option>
+                                <option value="AED">UAE Dirham (د.إ)</option>
+                                <option value="SAR">Saudi Riyal (﷼)</option>
+                                <option value="NZD">New Zealand Dollar (NZ$)</option>
+                                <option value="ZAR">South African Rand (R)</option>
+                                <option value="BRL">Brazilian Real (R$)</option>
+                                <option value="RUB">Russian Ruble (₽)</option>
+                                <option value="MYR">Malaysian Ringgit (RM)</option>
+                                <option value="THB">Thai Baht (฿)</option>
+                                <option value="IDR">Indonesian Rupiah (Rp)</option>
+                                <option value="VND">Vietnamese Dong (₫)</option>
+                                <option value="PHP">Philippine Peso (₱)</option>
+                                <option value="TRY">Turkish Lira (₺)</option>
+                                <option value="EGP">Egyptian Pound (E£)</option>
+                                <option value="NGN">Nigerian Naira (₦)</option>
+                                <option value="BDT">Bangladeshi Taka (৳)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tax Rate (%)</label>
+                            <input type="number" id="taxRate" step="0.01" min="0" value="18">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-gift" style="color:#f59e0b;"></i> Spin and Win Sheet Link (Optional)</label>
+                            <input type="url" id="profitMargin" placeholder="https://script.google.com/macros/s/AKfycb.../exec">
+                            <small class="text-muted">Google Apps Script Web App URL to sync Spin & Win Rewards, Prize History, and Members Club.</small>
+                            <details style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;">
+                                <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:#334155;">🎁 How to setup Spin & Win Google Sheet Backend</summary>
+                                <div style="margin-top:10px;font-size:0.75rem;color:#555;line-height:1.6;">
+                                    <ol style="padding-left:16px;margin:0;">
+                                        <li>Create a new Google Sheet</li>
+                                        <li>Go to <b>Extensions → Apps Script</b></li>
+                                        <li>Delete any existing code and paste the code in the <b>box below</b> (click <b>📋 Copy Code</b>)</li>
+                                        <li>Click <b>Deploy → New deployment</b></li>
+                                        <li>Select Type: <b>Web app</b></li>
+                                        <li>Set Execute as: <b>Me</b></li>
+                                        <li>Set Who has access: <b>Anyone</b> (CRITICAL)</li>
+                                        <li>Click <b>Deploy</b>, copy the Web App URL, and paste it into the field above!</li>
+                                    </ol>
+                                </div>
+                                <div style="margin-top:14px;">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+                                        <span style="font-size:0.75rem;font-weight:700;color:#334155;">Code.gs &mdash; Spin &amp; Win Backend (full file)</span>
+                                        <button type="button" onclick="copySpinWinCode(this)" style="padding:5px 10px;border:1px solid #e2e8f0;background:#fff;border-radius:6px;font-size:0.72rem;font-weight:700;color:#334155;cursor:pointer;flex-shrink:0;">📋 Copy Code</button>
+                                    </div>
+                                    <pre id="spinWinCode" style="max-height:340px;overflow:auto;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;margin:0;font-size:0.68rem;line-height:1.5;">/**
+ * ============================================================================
+ * SPIN &amp; WIN REWARD SYSTEM - FULL GOOGLE APPS SCRIPT BACKEND
+ * ============================================================================
+ * Supports:
+ * - Prize Records (Create, List, Update, Delete)
+ * - Multi-Condition Wheel Settings (Save, Load)
+ * - Members Club &amp; Loyalty Credits (List, Save, Delete, Add Credits, Redeem)
+ * - Transaction Credit Ledger History
+ * 
+ * INSTRUCTIONS:
+ * 1. Open Google Sheets -&gt; Extensions -&gt; Apps Script
+ * 2. Paste this entire code into Code.gs
+ * 3. Click Deploy &gt; New deployment
+ * 4. Select type: Web app
+ * 5. Set Description: &quot;Spin &amp; Win Backend v3.5&quot;
+ * 6. Set Execute as: &quot;Me&quot;
+ * 7. Set Who has access: &quot;Anyone&quot; (CRITICAL: Do NOT select &quot;Only me&quot;)
+ * 8. Click Deploy and copy the Web App URL!
+ * 9. Paste the URL into Settings &gt; Business Settings &gt; Google Sheet Data URL
+ * ============================================================================
+ */
+
+function doGet(e) {
+  try {
+    var params = e ? e.parameter : {};
+    var action = params.action || &quot;list&quot;;
+    var callback = params.callback;
+
+    var result = {};
+
+    if (action === &quot;list&quot;) {
+      result = getRecords();
+    } else if (action === &quot;settings&quot;) {
+      result = getSettings();
+    } else if (action === &quot;members&quot;) {
+      result = getMembers();
+    } else if (action === &quot;coupon_page&quot;) {
+      return renderCouponPageHtml(params.recordId);
+    } else {
+      result = { ok: false, message: &quot;Unknown action: &quot; + action };
+    }
+
+    return createResponse(result, callback);
+  } catch (err) {
+    return createResponse({ ok: false, message: err.toString() }, e ? e.parameter.callback : null);
+  }
+}
+
+function doPost(e) {
+  try {
+    var contents = e.postData ? e.postData.contents : &quot;&quot;;
+    var payload = {};
+    if (contents) {
+      try {
+        payload = JSON.parse(contents);
+      } catch (ex) {
+        payload = {};
+      }
+    }
+
+    var method = payload._method || &quot;POST&quot;;
+    var action = payload.action || (e.parameter ? e.parameter.action : &quot;&quot;);
+    var callback = e.parameter ? e.parameter.callback : null;
+
+    var result = {};
+
+    if (action === &quot;create&quot;) {
+      result = createRecord(payload.record);
+    } else if (action === &quot;update&quot; || method === &quot;PUT&quot;) {
+      result = updateRecord(payload.recordId, payload.updates);
+    } else if (action === &quot;delete&quot; || method === &quot;DELETE&quot;) {
+      result = deleteRecord(payload.recordId);
+    } else if (action === &quot;save_settings&quot;) {
+      result = saveSettings(payload.settings);
+    } else if (action === &quot;save_member&quot;) {
+      result = saveMember(payload.member);
+    } else if (action === &quot;delete_member&quot;) {
+      result = deleteMember(payload.memberId);
+    } else if (action === &quot;add_credits&quot;) {
+      result = addMemberCredits(payload.memberId, payload.credits, payload.purchaseAmount, payload.note, payload.txId, payload.name, payload.phone, payload.memberType);
+    } else if (action === &quot;deduct_credits&quot;) {
+      result = deductMemberCredits(payload.memberId, payload.credits, payload.note, payload.redeemMode, payload.billAmount, payload.txId);
+    } else if (action === &quot;sync_members&quot;) {
+      result = syncMembers(payload.members);
+    } else {
+      result = { ok: false, message: &quot;Unknown POST action: &quot; + action };
+    }
+
+    return createResponse(result, callback);
+  } catch (err) {
+    return createResponse({ ok: false, message: err.toString() }, null);
+  }
+}
+
+function createResponse(data, callback) {
+  var jsonString = JSON.stringify(data);
+  if (callback) {
+    var jsonpString = callback + &quot;(&quot; + jsonString + &quot;)&quot;;
+    return ContentService.createTextOutput(jsonpString)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(jsonString)
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==========================================
+// PRIZE RECORDS FUNCTIONS
+// ==========================================
+
+function getRecordsSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;Prize_Records&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Prize_Records&quot;);
+    sheet.appendRow([
+      &quot;Record ID&quot;, &quot;Shop Name&quot;, &quot;Customer Name&quot;, &quot;Phone Number&quot;,
+      &quot;Purchase Amount&quot;, &quot;Prize Won&quot;, &quot;Purchased Item&quot;, &quot;Condition ID&quot;,
+      &quot;Status&quot;, &quot;Spin Date ISO&quot;, &quot;Expiry Date ISO&quot;, &quot;Created At ISO&quot;, &quot;Updated At ISO&quot;
+    ]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;).setBackground(&quot;#f3f4f6&quot;);
+  }
+  return sheet;
+}
+
+function getRecords() {
+  var sheet = getRecordsSheet();
+  var data = sheet.getDataRange().getValues();
+  if (data.length &lt;= 1) return { ok: true, records: [] };
+
+  var records = [];
+  for (var i = 1; i &lt; data.length; i++) {
+    var row = data[i];
+    if (!row[0]) continue;
+    records.push({
+      recordId: String(row[0]),
+      shopName: String(row[1] || &quot;&quot;),
+      customerName: String(row[2] || &quot;&quot;),
+      customerNumber: String(row[3] || &quot;&quot;),
+      amount: Number(row[4] || 0),
+      prize: String(row[5] || &quot;&quot;),
+      purchasedItem: String(row[6] || &quot;&quot;),
+      conditionId: String(row[7] || &quot;&quot;),
+      status: String(row[8] || &quot;Pending&quot;),
+      dateTimeIso: String(row[9] || &quot;&quot;),
+      expiryIso: String(row[10] || &quot;&quot;),
+      createdAtIso: String(row[11] || &quot;&quot;),
+      updatedAtIso: String(row[12] || &quot;&quot;)
+    });
+  }
+  return { ok: true, records: records };
+}
+
+function createRecord(rec) {
+  if (!rec || !rec.recordId) return { ok: false, message: &quot;Invalid record data&quot; };
+  var sheet = getRecordsSheet();
+  sheet.appendRow([
+    rec.recordId,
+    rec.shopName || &quot;&quot;,
+    rec.customerName || &quot;&quot;,
+    rec.customerNumber || &quot;&quot;,
+    rec.amount || 0,
+    rec.prize || &quot;&quot;,
+    rec.purchasedItem || &quot;&quot;,
+    rec.conditionId || &quot;&quot;,
+    rec.status || &quot;Pending&quot;,
+    rec.dateTimeIso || new Date().toISOString(),
+    rec.expiryIso || new Date().toISOString(),
+    rec.createdAtIso || new Date().toISOString(),
+    rec.updatedAtIso || new Date().toISOString()
+  ]);
+  return { ok: true, recordId: rec.recordId };
+}
+
+function updateRecord(recordId, updates) {
+  if (!recordId || !updates) return { ok: false, message: &quot;Missing recordId or updates&quot; };
+  var sheet = getRecordsSheet();
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i &lt; data.length; i++) {
+    if (String(data[i][0]) === String(recordId)) {
+      var rowNum = i + 1;
+      if (updates.customerName !== undefined) sheet.getRange(rowNum, 3).setValue(updates.customerName);
+      if (updates.customerNumber !== undefined) sheet.getRange(rowNum, 4).setValue(updates.customerNumber);
+      if (updates.amount !== undefined) sheet.getRange(rowNum, 5).setValue(updates.amount);
+      if (updates.prize !== undefined) sheet.getRange(rowNum, 6).setValue(updates.prize);
+      if (updates.purchasedItem !== undefined) sheet.getRange(rowNum, 7).setValue(updates.purchasedItem);
+      if (updates.status !== undefined) sheet.getRange(rowNum, 9).setValue(updates.status);
+      if (updates.expiryIso !== undefined) sheet.getRange(rowNum, 11).setValue(updates.expiryIso);
+      sheet.getRange(rowNum, 13).setValue(new Date().toISOString());
+      return { ok: true, recordId: recordId };
+    }
+  }
+  return { ok: false, message: &quot;Record not found: &quot; + recordId };
+}
+
+function deleteRecord(recordId) {
+  if (!recordId) return { ok: false, message: &quot;Missing recordId&quot; };
+  var sheet = getRecordsSheet();
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i &lt; data.length; i++) {
+    if (String(data[i][0]) === String(recordId)) {
+      sheet.deleteRow(i + 1);
+      return { ok: true, recordId: recordId };
+    }
+  }
+  return { ok: false, message: &quot;Record not found: &quot; + recordId };
+}
+
+// ==========================================
+// SETTINGS FUNCTIONS
+// ==========================================
+
+function getSettingsSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;app_settings&quot;) || ss.getSheetByName(&quot;Settings&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Settings&quot;);
+    sheet.appendRow([&quot;Key&quot;, &quot;Value&quot;]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;);
+  }
+  return sheet;
+}
+
+function getSettings() {
+  var sheet = getSettingsSheet();
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i &lt; data.length; i++) {
+    if (data[i][0] === &quot;GLOBAL_SETTINGS&quot;) {
+      try {
+        var settings = JSON.parse(data[i][1]);
+        return { ok: true, settings: settings };
+      } catch (e) {
+        return { ok: false, message: &quot;Failed to parse settings JSON&quot; };
+      }
+    }
+  }
+  return { ok: true, settings: null };
+}
+
+function saveSettings(settingsObj) {
+  if (!settingsObj) return { ok: false, message: &quot;Invalid settings object&quot; };
+  var sheet = getSettingsSheet();
+  var data = sheet.getDataRange().getValues();
+  var jsonStr = JSON.stringify(settingsObj);
+  for (var i = 1; i &lt; data.length; i++) {
+    if (data[i][0] === &quot;GLOBAL_SETTINGS&quot;) {
+      sheet.getRange(i + 1, 2).setValue(jsonStr);
+      return { ok: true, settings: settingsObj };
+    }
+  }
+  sheet.appendRow([&quot;GLOBAL_SETTINGS&quot;, jsonStr]);
+  return { ok: true, settings: settingsObj };
+}
+
+// ==========================================
+// MEMBERS CLUB &amp; CREDITS FUNCTIONS
+// ==========================================
+
+function getMembersSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;Members&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Members&quot;);
+    sheet.appendRow([
+      &quot;Member ID&quot;, &quot;Name&quot;, &quot;Phone&quot;, &quot;Type&quot;, &quot;Active Credits&quot;,
+      &quot;Lifetime Earned&quot;, &quot;Total Redeemed&quot;, &quot;Total Cash Paid&quot;,
+      &quot;Notes&quot;, &quot;Created At ISO&quot;, &quot;Updated At ISO&quot;
+    ]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;).setBackground(&quot;#e0e7ff&quot;);
+  }
+  return sheet;
+}
+
+function getMembers() {
+  var sheet = getMembersSheet();
+  var data = sheet.getDataRange().getValues();
+  if (data.length &lt;= 1) return { ok: true, members: [] };
+
+  var members = [];
+  for (var i = 1; i &lt; data.length; i++) {
+    var row = data[i];
+    if (!row[0]) continue;
+    members.push({
+      id: String(row[0]),
+      name: String(row[1] || &quot;&quot;),
+      phone: String(row[2] || &quot;&quot;),
+      memberType: String(row[3] || &quot;Direct Member&quot;),
+      credits: Number(row[4] || 0),
+      totalEarned: Number(row[5] || 0),
+      totalRedeemed: Number(row[6] || 0),
+      totalCashPaid: Number(row[7] || 0),
+      notes: String(row[8] || &quot;&quot;),
+      createdAtIso: String(row[9] || &quot;&quot;),
+      updatedAtIso: String(row[10] || &quot;&quot;)
+    });
+  }
+  return { ok: true, members: members };
+}
+
+function saveMember(mem) {
+  if (!mem || !mem.id) return { ok: false, message: &quot;Invalid member data&quot; };
+  var sheet = getMembersSheet();
+  var data = sheet.getDataRange().getValues();
+  var nowIso = new Date().toISOString();
+
+  for (var i = 1; i &lt; data.length; i++) {
+    if (String(data[i][0]) === String(mem.id)) {
+      var rowNum = i + 1;
+      sheet.getRange(rowNum, 2).setValue(mem.name || &quot;&quot;);
+      sheet.getRange(rowNum, 3).setValue(mem.phone || &quot;&quot;);
+      sheet.getRange(rowNum, 4).setValue(mem.memberType || &quot;Direct Member&quot;);
+      sheet.getRange(rowNum, 5).setValue(mem.credits || 0);
+      sheet.getRange(rowNum, 6).setValue(mem.totalEarned || 0);
+      sheet.getRange(rowNum, 7).setValue(mem.totalRedeemed || 0);
+      sheet.getRange(rowNum, 8).setValue(mem.totalCashPaid || 0);
+      sheet.getRange(rowNum, 9).setValue(mem.notes || &quot;&quot;);
+      sheet.getRange(rowNum, 11).setValue(nowIso);
+      return { ok: true, memberId: mem.id };
+    }
+  }
+
+  sheet.appendRow([
+    mem.id,
+    mem.name || &quot;&quot;,
+    mem.phone || &quot;&quot;,
+    mem.memberType || &quot;Direct Member&quot;,
+    mem.credits || 0,
+    mem.totalEarned || mem.credits || 0,
+    mem.totalRedeemed || 0,
+    mem.totalCashPaid || 0,
+    mem.notes || &quot;&quot;,
+    mem.createdAtIso || nowIso,
+    nowIso
+  ]);
+  return { ok: true, memberId: mem.id };
+}
+
+function syncMembers(membersList) {
+  if (!Array.isArray(membersList)) return { ok: false, message: &quot;Invalid members list&quot; };
+  for (var i = 0; i &lt; membersList.length; i++) {
+    saveMember(membersList[i]);
+  }
+  return { ok: true, count: membersList.length };
+}
+
+function deleteMember(memberId) {
+  if (!memberId) return { ok: false, message: &quot;Missing memberId&quot; };
+  var sheet = getMembersSheet();
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i &lt; data.length; i++) {
+    if (String(data[i][0]) === String(memberId)) {
+      sheet.deleteRow(i + 1);
+      return { ok: true, memberId: memberId };
+    }
+  }
+  return { ok: false, message: &quot;Member not found: &quot; + memberId };
+}
+
+function addMemberCredits(memberId, credits, purchaseAmount, note, txId, name, phone, memberType) {
+  if (!memberId || !credits) return { ok: false, message: &quot;Missing memberId or credits&quot; };
+  var sheet = getMembersSheet();
+  var data = sheet.getDataRange().getValues();
+  var found = false;
+
+  for (var i = 1; i &lt; data.length; i++) {
+    if (String(data[i][0]) === String(memberId)) {
+      found = true;
+      var rowNum = i + 1;
+      var curCredits = Number(data[i][4] || 0);
+      var curEarned = Number(data[i][5] || 0);
+
+      sheet.getRange(rowNum, 5).setValue(curCredits + Number(credits));
+      sheet.getRange(rowNum, 6).setValue(curEarned + Number(credits));
+      sheet.getRange(rowNum, 11).setValue(new Date().toISOString());
+      break;
+    }
+  }
+
+  if (!found) {
+    saveMember({
+      id: memberId,
+      name: name || &quot;Member&quot;,
+      phone: phone || &quot;&quot;,
+      memberType: memberType || &quot;Direct Member&quot;,
+      credits: Number(credits),
+      totalEarned: Number(credits)
+    });
+  }
+
+  logLedgerTx(memberId, &quot;EARN&quot;, Number(credits), Number(credits) / 100, note || &quot;Purchase Credit&quot;, txId);
+  return { ok: true, memberId: memberId };
+}
+
+function deductMemberCredits(memberId, credits, note, redeemMode, billAmount, txId) {
+  if (!memberId || !credits) return { ok: false, message: &quot;Missing memberId or credits&quot; };
+  var sheet = getMembersSheet();
+  var data = sheet.getDataRange().getValues();
+
+  for (var i = 1; i &lt; data.length; i++) {
+    if (String(data[i][0]) === String(memberId)) {
+      var rowNum = i + 1;
+      var curCredits = Number(data[i][4] || 0);
+      var curRedeemed = Number(data[i][6] || 0);
+      var curCashPaid = Number(data[i][7] || 0);
+      var cashWorth = Number(credits) / 100;
+
+      if (curCredits &lt; Number(credits)) {
+        return { ok: false, message: &quot;Insufficient credit balance&quot; };
+      }
+
+      sheet.getRange(rowNum, 5).setValue(curCredits - Number(credits));
+      sheet.getRange(rowNum, 6).setValue(curRedeemed + Number(credits));
+      sheet.getRange(rowNum, 7).setValue(curCashPaid + cashWorth);
+      sheet.getRange(rowNum, 11).setValue(new Date().toISOString());
+
+      logLedgerTx(memberId, &quot;REDEEM&quot;, -Number(credits), cashWorth, note || &quot;Credit Redemption&quot;, txId);
+      return { ok: true, memberId: memberId };
+    }
+  }
+  return { ok: false, message: &quot;Member not found: &quot; + memberId };
+}
+
+function logLedgerTx(memberId, type, credits, cashVal, note, txId) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;Credit_Ledger&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Credit_Ledger&quot;);
+    sheet.appendRow([&quot;Tx ID&quot;, &quot;Member ID&quot;, &quot;Date ISO&quot;, &quot;Type&quot;, &quot;Credits&quot;, &quot;Cash Worth&quot;, &quot;Note&quot;]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;);
+  }
+  sheet.appendRow([
+    txId || (&quot;TX_&quot; + Date.now()),
+    memberId,
+    new Date().toISOString(),
+    type,
+    credits,
+    cashVal,
+    note || &quot;&quot;
+  ]);
+}
+</pre>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="enableTax" checked>
+                                <label for="enableTax">Enable Tax Calculation</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="enableLowStockAlert" checked>
+                                <label for="enableLowStockAlert">Enable Low Stock Alerts</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Low Stock Alert Threshold</label>
+                            <input type="number" id="lowStockThreshold" min="1" value="10">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Current Balance (Cash in Hand)</label>
+                            <input type="number" id="shopAsset" step="0.01" value="0">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-action" data-tip="Save Settings">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- POS Settings Tab -->
+            <div class="tab-content" id="pos">
+                <div class="settings-card">
+                    <h4><i class="fas fa-cash-register"></i> POS Settings</h4>
+
+                    <form id="posForm">
+                        <div class="form-group">
+                            <label>Default Payment Method</label>
+                            <select id="defaultPaymentMethod">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="credit">Credit</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="enableBarcodeScanner" checked>
+                                <label for="enableBarcodeScanner">Enable Barcode Scanner</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="enableQuickSale" checked>
+                                <label for="enableQuickSale">Enable Quick Sale Mode</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="autoPrintInvoice" checked>
+                                <label for="autoPrintInvoice">Auto Print Invoice</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Receipt Header Text</label>
+                            <textarea id="receiptHeader" rows="2">Thank you for shopping with us!</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Receipt Footer Text</label>
+                            <textarea id="receiptFooter" rows="2">Please visit again!</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Receipt QR Code</label>
+                            <small class="text-muted">Printed at the bottom of every sales receipt.</small>
+                            <div class="logo-upload">
+                                <div class="logo-preview">
+                                    <img id="receiptQrPreview" src="" alt="Receipt QR Code"
+                                        style="display: none;">
+                                </div>
+                                <div class="logo-actions">
+                                    <button type="button" class="btn btn-sm btn-action" id="uploadReceiptQrBtn" data-tip="Upload QR">
+                                        <i class="fas fa-upload"></i> Upload QR
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-action btn-danger"
+                                        id="removeReceiptQrBtn" data-tip="Remove QR">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                    <input type="file" id="receiptQrFile" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-action" data-tip="Save POS Settings">
+                            <i class="fas fa-save"></i> Save POS Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Public View Settings Tab -->
+            <div class="tab-content" id="public-view">
+                <div class="settings-card">
+                    <h4><i class="fas fa-eye"></i> Public View Settings</h4>
+                    <p class="text-muted" style="margin-bottom: 20px;">Customize how your shop appears to customers on
+                        the public link.</p>
+
+                    <form id="publicViewForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fab fa-whatsapp"></i> WhatsApp Number (Order)</label>
+                                <input type="text" id="publicWhatsapp" placeholder="+1234567890">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fab fa-telegram"></i> Telegram ID (Order)</label>
+                                <input type="text" id="publicTelegram" placeholder="@yourusername">
+                            </div>
+                        </div>
+
+                        <!-- Extra Contact Links -->
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label style="display:flex; align-items:center; justify-content:space-between;">
+                                <span><i class="fas fa-address-book"></i> Contact Info (shown in shop footer)</span>
+                                <button type="button" id="addExtraContact" style="background:var(--primary,#0f6425);color:white;border:none;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                                    <i class="fas fa-plus"></i> Add Contact
+                                </button>
+                            </label>
+                            <div id="extraContactsList" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
+                            <small class="text-muted">Add phone, WhatsApp, email, or any link to show in your shop's Contact Info section. Drag to reorder.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-wand-magic-sparkles" style="color:#7c3aed;"></i> AI Virtual Try-On</label>
+
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;color:#334155;margin-bottom:6px;">
+                                <input type="checkbox" id="enableTryOn">
+                                <span>Show the "Try It On" button on products</span>
+                            </label>
+                            <small class="text-muted">Customers upload a photo and get the garment shown on their own face/body via Gemini.</small>
+
+                            <div style="margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;">
+                                <label style="font-size:0.8rem;font-weight:600;color:#334155;">
+                                    <i class="fas fa-key"></i> Gemini API Key
+                                </label>
+                                <input type="password" id="geminiApiKey" placeholder="AIza..." autocomplete="off"
+                                    style="margin-top:6px;">
+                                <small class="text-muted" id="geminiKeyHint">
+                                    Required. The "Try It On" button only appears on your products once a key is saved here.
+                                    Get one in Google AI Studio, then restrict it to the Generative Language API so it cannot be
+                                    abused. Every try-on is billed to this key.
+                                </small>
+
+                                <label style="font-size:0.8rem;font-weight:600;color:#334155;margin-top:12px;display:block;">
+                                    <i class="fas fa-robot"></i> Image Model
+                                </label>
+                                <select id="geminiImageModel" class="form-control" style="margin-top:6px;">
+                                    <option value="gemini-2.5-flash-image">gemini-2.5-flash-image (Nano Banana)</option>
+                                    <option value="gemini-3.1-flash-image">gemini-3.1-flash-image (Nano Banana 2)</option>
+                                    <option value="gemini-3-pro-image">gemini-3-pro-image (Nano Banana Pro)</option>
+                                </select>
+                                <small class="text-muted">
+                                    Keep only models your key can actually reach.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-table" style="color:#0284c7;"></i> Google Sheet URL — Orders, Likes & Comments (Optional)</label>
+                            <input type="url" id="publicGoogleSheet" placeholder="https://script.google.com/macros/s/...">
+                            <small class="text-muted">Connect your Google Sheet Web App URL for Customer Orders, Product Likes (♥), and Product Comments.</small>
+                            <details style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;">
+                                <summary style="cursor:pointer;font-size:0.8rem;font-weight:600;color:#334155;">📋 How to setup Google Sheet</summary>
+                                <div style="margin-top:10px;font-size:0.75rem;color:#555;line-height:1.6;">
+                                    <ol style="padding-left:16px;margin:0;">
+                                        <li>Create a new Google Sheet</li>
+                                        <li>Go to <b>Extensions → Apps Script</b></li>
+                                        <li>Delete existing code and paste this:</li>
+                                    </ol>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;">
+                                        <span style="font-weight:600;color:#334155;">Apps Script Code:</span>
+                                        <button type="button" id="copyAppsScriptBtn" style="background:#0284c7;color:white;border:none;padding:4px 10px;border-radius:4px;font-size:0.7rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                                            <i class="fas fa-copy"></i> Copy Script Code
+                                        </button>
+                                    </div>
+                                    <pre id="appsScriptCodeBlock" style="background:#1e293b;color:#e2e8f0;padding:12px;border-radius:6px;margin:4px 0 10px;font-size:0.68rem;overflow-x:auto;white-space:pre-wrap;">// ============================================================
+// ORDERS + PRODUCT LIKES + COMMENTS + VISITORS — GOOGLE APPS SCRIPT (Web App)
+// ============================================================
+// doPost:
+//   - visitor_type:&quot;visitor&quot; -&gt; writes a row to the &quot;Visitor&quot; tab (auto-created)
+//   - like_type:&quot;like&quot;       -&gt; writes a row to the &quot;Likes&quot; tab (auto-created)
+//   - comment_type:&quot;comment&quot; -&gt; writes a row to the &quot;Comments&quot; tab (auto-created)
+//   - action:&quot;updateStatus&quot;  -&gt; updates the Status column (I) of an order
+//   - otherwise              -&gt; appends a new customer order row
+// doGet:
+//   - action:&quot;comments&quot; (&amp; product_id) -&gt; returns comments for a product
+//   - action:&quot;visitors&quot;                -&gt; returns recent visitors from &quot;Visitor&quot; tab
+//   - action:&quot;record_visitor&quot;          -&gt; records a visitor row via GET
+//   - otherwise                        -&gt; returns all order rows for the Admin Dashboard
+//
+// DEPLOY: Deploy &gt; New deployment &gt; Web app
+//   Execute as: Me   |   Who has access: Anyone
+// ============================================================
+
+function jsonOk(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// The Orders tab: prefer a sheet literally named &quot;Orders&quot;,
+// otherwise the FIRST sheet (so the Likes/Visitor tab never gets read as orders).
+function getOrdersSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var named = ss.getSheetByName(&quot;Orders&quot;) || ss.getSheetByName(&quot;Orders Data&quot;);
+  if (named) return named;
+  var sheets = ss.getSheets();
+  return (sheets.length &gt; 0) ? sheets[0] : ss.getActiveSheet();
+}
+
+// The Likes tab (auto-created with a header row on first use).
+function getLikesSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;Likes&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Likes&quot;);
+    sheet.appendRow([&quot;Timestamp&quot;, &quot;Product ID&quot;, &quot;Product Name&quot;, &quot;Likes Total&quot;, &quot;Delta&quot;, &quot;Action&quot;]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;);
+  }
+  return sheet;
+}
+
+// The Comments tab (auto-created with a header row on first use).
+function getCommentsSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;Comments&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Comments&quot;);
+    sheet.appendRow([&quot;Timestamp&quot;, &quot;Product ID&quot;, &quot;Product Name&quot;, &quot;Name&quot;, &quot;Comment&quot;, &quot;Action&quot;]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;);
+  }
+  return sheet;
+}
+
+// The Visitor tab (auto-created with a header row on first use).
+function getVisitorSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(&quot;Visitor&quot;) || ss.getSheetByName(&quot;Visitors&quot;);
+  if (!sheet) {
+    sheet = ss.insertSheet(&quot;Visitor&quot;);
+    sheet.appendRow([&quot;Timestamp&quot;, &quot;IP Address&quot;, &quot;IP Location&quot;, &quot;City&quot;, &quot;Region&quot;, &quot;Country&quot;, &quot;Device&quot;, &quot;Browser&quot;, &quot;Shop Name&quot;, &quot;Page URL&quot;, &quot;User Agent&quot;]);
+    sheet.getRange(&quot;1:1&quot;).setFontWeight(&quot;bold&quot;);
+  }
+  return sheet;
+}
+
+// 1. Save incoming order / update order status / record a like / record visitor
+function doPost(e) {
+  try {
+    var data = {};
+    if (e.postData &amp;&amp; e.postData.contents) {
+      try { data = JSON.parse(e.postData.contents); } catch (ex) { data = {}; }
+    }
+
+    // ---- VISITORS: write to the Visitor tab ----
+    if (data.visitor_type === &quot;visitor&quot; || data.type === &quot;visitor&quot; || data.action === &quot;record_visitor&quot;) {
+      var visitorSheet = getVisitorSheet();
+      var loc = data.ip_location || data.location || &quot;&quot;;
+      if (!loc) {
+        var parts = [data.city, data.region, data.country].filter(Boolean);
+        loc = parts.join(&quot;, &quot;);
+      }
+      visitorSheet.appendRow([
+        data.timestamp || new Date().toLocaleString(),
+        data.ip || &quot;&quot;,
+        loc || &quot;Unknown&quot;,
+        data.city || &quot;&quot;,
+        data.region || &quot;&quot;,
+        data.country || &quot;&quot;,
+        data.device || &quot;&quot;,
+        data.browser || &quot;&quot;,
+        data.shop_name || &quot;&quot;,
+        data.page_url || &quot;&quot;,
+        data.user_agent || &quot;&quot;
+      ]);
+      return jsonOk({ status: 'success', type: 'visitor' });
+    }
+
+    // ---- LIKES: write to the Likes tab ----
+    if (data.like_type === &quot;like&quot;) {
+      var likeSheet = getLikesSheet();
+      likeSheet.appendRow([
+        data.timestamp || new Date().toISOString(),
+        data.product_id || &quot;&quot;,
+        data.product_name || &quot;&quot;,
+        data.likes || 0,
+        data.delta || 0,
+        &quot;like&quot;
+      ]);
+      return jsonOk({ status: 'success', type: 'like' });
+    }
+
+    // ---- COMMENTS: write to the Comments tab ----
+    if (data.comment_type === &quot;comment&quot;) {
+      var commentSheet = getCommentsSheet();
+      commentSheet.appendRow([
+        data.timestamp || new Date().toISOString(),
+        data.product_id || &quot;&quot;,
+        data.product_name || &quot;&quot;,
+        data.name || &quot;Anonymous&quot;,
+        data.comment || &quot;&quot;,
+        &quot;comment&quot;
+      ]);
+      return jsonOk({ status: 'success', type: 'comment' });
+    }
+
+    var sheet = getOrdersSheet();
+
+    // ---- Order Status update from Admin Dashboard ----
+    if (data.action === 'updateStatus') {
+      var rowId = parseInt(data.row_id, 10);
+      var newStatus = data.status || 'pending';
+      if (rowId &gt; 1 &amp;&amp; rowId &lt;= sheet.getLastRow()) {
+        sheet.getRange(rowId, 9).setValue(newStatus); // Column 9 (I) is Status
+        return jsonOk({ status: 'success' });
+      }
+      return jsonOk({ status: 'error', message: 'Invalid row_id' });
+    }
+
+    // ---- Otherwise, append new customer order ----
+    sheet.appendRow([
+      data.order_date || new Date().toLocaleString(),
+      data.customer_name || '',
+      data.customer_phone || '',
+      data.customer_location || '',
+      data.items || '',
+      data.total || 0,
+      data.currency || 'INR',
+      data.customer_note || '',
+      data.status || 'pending'
+    ]);
+    return jsonOk({ status: 'success' });
+  } catch (err) {
+    return jsonOk({ status: 'error', message: err.toString() });
+  }
+}
+
+// 2. Fetch orders for Admin Dashboard, comments for a product, or visitors
+function doGet(e) {
+  var params = (e &amp;&amp; e.parameter) || {};
+
+  // ---- RECORD VISITOR (via GET beacon/fallback) ----
+  if (params.action === &quot;record_visitor&quot;) {
+    var vSheet = getVisitorSheet();
+    var loc = params.ip_location || params.location || &quot;&quot;;
+    if (!loc) {
+      var parts = [params.city, params.region, params.country].filter(Boolean);
+      loc = parts.join(&quot;, &quot;);
+    }
+    vSheet.appendRow([
+      params.timestamp || new Date().toLocaleString(),
+      params.ip || &quot;&quot;,
+      loc || &quot;Unknown&quot;,
+      params.city || &quot;&quot;,
+      params.region || &quot;&quot;,
+      params.country || &quot;&quot;,
+      params.device || &quot;&quot;,
+      params.browser || &quot;&quot;,
+      params.shop_name || &quot;&quot;,
+      params.page_url || &quot;&quot;,
+      params.user_agent || &quot;&quot;
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, type: 'visitor' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // ---- VISITORS: return recent visitor logs ----
+  if (params.action === &quot;visitors&quot; || params.action === &quot;visitor&quot;) {
+    var visitorSheet = getVisitorSheet();
+    var vRows = visitorSheet.getDataRange().getValues();
+    var visitors = [];
+    for (var i = 1; i &lt; vRows.length; i++) {
+      if (!vRows[i][0] &amp;&amp; !vRows[i][1]) continue;
+      visitors.push({
+        timestamp: vRows[i][0] instanceof Date ? vRows[i][0].toISOString() : String(vRows[i][0] || &quot;&quot;),
+        ip: String(vRows[i][1] || &quot;&quot;),
+        location: String(vRows[i][2] || &quot;&quot;),
+        city: String(vRows[i][3] || &quot;&quot;),
+        region: String(vRows[i][4] || &quot;&quot;),
+        country: String(vRows[i][5] || &quot;&quot;),
+        device: String(vRows[i][6] || &quot;&quot;),
+        browser: String(vRows[i][7] || &quot;&quot;),
+        shopName: String(vRows[i][8] || &quot;&quot;),
+        pageUrl: String(vRows[i][9] || &quot;&quot;)
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, visitors: visitors }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // ---- COMMENTS: return comments for a product (filtered by product_id) ----
+  if (params.action === &quot;comments&quot;) {
+    var commentSheet = getCommentsSheet();
+    var cRows = commentSheet.getDataRange().getValues();
+    var comments = [];
+    for (var i = 1; i &lt; cRows.length; i++) {
+      if (!cRows[i][4]) continue; // Skip rows without a comment
+      if (params.product_id &amp;&amp; String(cRows[i][1]) !== String(params.product_id)) continue;
+      comments.push({
+        timestamp: cRows[i][0] instanceof Date ? cRows[i][0].toISOString() : String(cRows[i][0] || &quot;&quot;),
+        productId: String(cRows[i][1] || &quot;&quot;),
+        productName: String(cRows[i][2] || &quot;&quot;),
+        name: String(cRows[i][3] || &quot;Anonymous&quot;),
+        comment: String(cRows[i][4] || &quot;&quot;)
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, comments: comments }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var sheet = getOrdersSheet();
+  var rows = sheet.getDataRange().getValues();
+  if (rows.length &lt;= 1) {
+    return ContentService.createTextOutput(JSON.stringify([]))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  var data = [];
+  for (var i = 1; i &lt; rows.length; i++) {
+    var row = rows[i];
+    if (!row[0] &amp;&amp; !row[1] &amp;&amp; !row[2]) continue; // Skip empty rows
+    data.push({
+      row_id: i + 1,
+      order_date: row[0] instanceof Date ? row[0].toLocaleString() : String(row[0] || ''),
+      customer_name: String(row[1] || ''),
+      customer_phone: String(row[2] || ''),
+      customer_location: String(row[3] || ''),
+      items: String(row[4] || ''),
+      total: parseFloat(row[5]) || 0,
+      currency: String(row[6] || 'INR'),
+      customer_note: String(row[7] || ''),
+      status: String(row[8] || 'pending')
+    });
+  }
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+                                    <ol start="4" style="padding-left:16px;margin:0;">
+                                        <li>Click <b>Deploy → New deployment</b> (or <b>Manage deployments → Edit → New version</b>)</li>
+                                        <li>Select type: <b>Web app</b></li>
+                                        <li>Set "Who has access" to <b>Anyone</b></li>
+                                        <li>Click <b>Deploy</b> and copy the URL</li>
+                                        <li>Paste the URL above</li>
+                                    </ol>
+                                    <p style="margin-top:8px;color:#f59e0b;font-weight:600;">⚠️ Orders tab column headers (add manually in Row 1): Date | Name | Phone | Location | Items | Total | Currency | Note | Status — the <b>Likes</b> and <b>Comments</b> tabs are created automatically.</p>
+                                </div>
+                            </details>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fab fa-facebook"></i> Facebook Page URL</label>
+                                <input type="url" id="publicFacebook" placeholder="https://facebook.com/yourshop">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fab fa-instagram"></i> Instagram URL</label>
+                                <input type="url" id="publicInstagram" placeholder="https://instagram.com/yourshop">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-globe"></i> Custom Domain</label>
+                            <input type="text" id="publicCustomDomain" placeholder="www.yourshop.com">
+                            <small class="text-muted">Point your domain CNAME to our servers (Contact admin for
+                                setup).</small>
+                        </div>
+
+                        <div class="settings-group"
+                            style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 30px; border: 1px solid #e2e8f0;">
+                            <h5
+                                style="margin-bottom: 15px; color: var(--public-primary); display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-search"></i> SEO & Search Engine Optimization
+                            </h5>
+
+                            <div class="form-group">
+                                <label>Meta Title Tag</label>
+                                <input type="text" id="publicSeoTitle"
+                                    placeholder="e.g. Best Organic Grocery Store in Dhaka">
+                                <small class="text-muted">Appears as the clickable link in search results. Max 60
+                                    characters recommended.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Meta Description</label>
+                                <textarea id="publicSeoDescription" rows="3"
+                                    placeholder="Describe your shop for search engines..."></textarea>
+                                <small class="text-muted">Brief summary of your shop. Max 160 characters
+                                    recommended.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>SEO Keywords</label>
+                                <input type="text" id="publicKeywords"
+                                    placeholder="shop, grocery, online store, organic">
+                                <small class="text-muted">Comma separated keywords for search engines.</small>
+                            </div>
+
+                            <!-- Google Preview -->
+                            <div class="seo-preview"
+                                style="margin-top: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; max-width: 600px;">
+                                <div style="font-size: 0.85rem; color: #70757a; margin-bottom: 5px;">Google Search
+                                    Preview:</div>
+                                <div id="googlePreviewUrl"
+                                    style="font-size: 0.9rem; color: #202124; margin-bottom: 3px; display: flex; align-items: center; gap: 4px;">
+                                    <span>myshop.com</span> <i class="fas fa-caret-down" style="font-size: 0.7rem;"></i>
+                                </div>
+                                <div id="googlePreviewTitle"
+                                    style="font-size: 1.25rem; color: #1a0dab; margin-bottom: 3px; cursor: pointer; text-decoration: none;">
+                                    Shop Name - Online Menu</div>
+                                <div id="googlePreviewDesc"
+                                    style="font-size: 0.875rem; color: #4d5156; line-height: 1.58;">Experience the best
+                                    shopping with us. High quality products and fast delivery...</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-code"></i> Custom Scripts (Header/Analytics)</label>
+                            <textarea id="publicCustomScripts" rows="4"
+                                placeholder="<script>... analytics or pixels ...</script>"></textarea>
+                            <small class="text-muted">Paste your Google Analytics, Facebook Pixel, or other tracking
+                                scripts here. They will be injected into the public shop view.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-map-marked-alt"></i> Google Maps Embed URL</label>
+                            <input type="text" id="publicMapsUrl"
+                                placeholder="https://www.google.com/maps/embed?pb=...">
+                            <div
+                                style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-top: 8px; font-size: 0.85rem; border-left: 4px solid #ffeeba;">
+                                <strong>Important:</strong> To avoid "Refused to connect" errors: <br>
+                                1. Open Google Maps <br>
+                                2. Click <strong>Share</strong> <br>
+                                3. Select <strong>Embed a map</strong> <br>
+                                4. Copy the link inside the <code>src="..."</code> attribute (or paste the whole iframe
+                                tag here).
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-info-circle"></i> About Us (Footer)</label>
+                            <textarea id="publicAboutUs" rows="3"
+                                placeholder="Tell your customers about your shop..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Opening Hours</label>
+                            <textarea id="publicOpeningHours" rows="2"
+                                placeholder="Monday - Sunday: 9:00 AM - 10:00 PM"></textarea>
+                        </div>
+
+                        <div class="form-group"
+                            style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #dcfce7;">
+                            <label><i class="fas fa-sort-amount-down"></i> Category Display Order</label>
+                            <input type="text" id="publicCategoryOrder"
+                                placeholder="e.g. Fruits, Vegetables, Meat, Drinks">
+                            <small class="text-muted">Comma separated category names in the order you want them to
+                                appear. Leave empty for default alphabetical order.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-magic"></i> Select Shop Theme (10 Styles)</label>
+                            <div class="theme-selector-grid">
+                                <div class="theme-card active" data-theme="default" data-color="#0f6425">
+                                    <div class="theme-preview" style="background: #0f6425;"></div>
+                                    <span>Forest (Classic)</span>
+                                </div>
+                                <div class="theme-card" data-theme="ocean" data-color="#1e3a8a">
+                                    <div class="theme-preview" style="background: #1e3a8a;"></div>
+                                    <span>Ocean Blue</span>
+                                </div>
+                                <div class="theme-card" data-theme="sunset" data-color="#ea580c">
+                                    <div class="theme-preview"
+                                        style="background: linear-gradient(135deg, #ea580c, #f59e0b);"></div>
+                                    <span>Sunset Glow</span>
+                                </div>
+                                <div class="theme-card" data-theme="neon" data-color="#7c3aed">
+                                    <div class="theme-preview"
+                                        style="background: #000; border: 2px solid #7c3aed; box-shadow: 0 0 10px #7c3aed inset;">
+                                    </div>
+                                    <span>Neon Night</span>
+                                </div>
+                                <div class="theme-card" data-theme="minimal" data-color="#111827">
+                                    <div class="theme-preview" style="background: #fff; border: 1px solid #ddd;"></div>
+                                    <span>Minimalist</span>
+                                </div>
+                                <div class="theme-card" data-theme="luxe" data-color="#1c1917">
+                                    <div class="theme-preview" style="background: #1c1917; border: 1px solid #d4af37;">
+                                    </div>
+                                    <span>Premium Luxe</span>
+                                </div>
+                                <div class="theme-card" data-theme="berry" data-color="#db2777">
+                                    <div class="theme-preview" style="background: #db2777;"></div>
+                                    <span>Berry Sweet</span>
+                                </div>
+                                <div class="theme-card" data-theme="eco" data-color="#166534">
+                                    <div class="theme-preview" style="background: #dcfce7; border: 2px solid #166534;">
+                                    </div>
+                                    <span>Eco Green</span>
+                                </div>
+                                <div class="theme-card" data-theme="royal" data-color="#581c87">
+                                    <div class="theme-preview" style="background: #581c87;"></div>
+                                    <span>Royal Gold</span>
+                                </div>
+                                <div class="theme-card" data-theme="retro" data-color="#ef4444">
+                                    <div class="theme-preview" style="background: #fdf2f2; border: 4px solid #ef4444;">
+                                    </div>
+                                    <span>Retro Pop</span>
+                                </div>
+                            </div>
+                            <input type="hidden" id="publicThemeColor" value="#0f6425">
+                            <input type="hidden" id="publicThemeLayout" value="default">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-images"></i> Carousel Images (Max 5)</label>
+                            <div class="carousel-upload-wrapper">
+                                <div id="carouselPreview" class="carousel-preview-grid">
+                                    <!-- Previews will appear here -->
+                                </div>
+                                <div class="carousel-actions" style="margin-top: 15px;">
+                                    <div class="add-carousel-btn" id="addCarouselItem">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Add Image</span>
+                                    </div>
+                                    <input type="file" id="carouselFileInput" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+                            <small class="text-muted">Add up to 5 high-quality images for your shop's header
+                                carousel.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-ad"></i> Public Banner Text</label>
+                            <textarea id="publicBannerText" rows="2"
+                                placeholder="Welcome to our shop! Get 10% off on your first order."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-action" data-tip="Save Public View Settings">
+                            <i class="fas fa-save"></i> Save Public View Settings
+                        </button>
+                    </form>
+                </div>
+
+                <div class="settings-card" style="margin-top: 20px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h4><i class="fas fa-ticket-alt"></i> Discount Codes</h4>
+                        <button type="button" class="btn btn-sm btn-primary" id="addDiscountBtn">
+                            <i class="fas fa-plus"></i> Add New Code
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Min. Order</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="discountsTableBody">
+                                <!-- Discount codes will be loaded here -->
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading discount codes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup & Export Tab -->
+            <div class="tab-content" id="backup">
+                <div class="settings-card">
+                    <h4><i class="fas fa-database"></i> Backup & Export</h4>
+
+                    <div class="backup-options">
+                        <div class="backup-card">
+                            <div class="backup-icon">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h5>Export All Data to Excel</h5>
+                                <p>Export products, sales, expenses, and credit data</p>
+                                <button class="btn btn-success btn-action" id="exportAllDataBtn" data-tip="Export All Data">
+                                    <i class="fas fa-download"></i> Export All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="backup-card">
+                            <div class="backup-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h5>Export Reports to PDF</h5>
+                                <p>Generate PDF reports for sales, expenses, and inventory</p>
+                                <button class="btn btn-danger btn-action" id="exportPdfReportsBtn" data-tip="Generate PDF Reports">
+                                    <i class="fas fa-download"></i> Generate PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="backup-card">
+                            <div class="backup-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h5>Backup to Cloud</h5>
+                                <p>Create a backup of all shop data to Supabase</p>
+                                <button class="btn btn-primary btn-action" id="backupToCloudBtn" data-tip="Backup to Cloud">
+                                    <i class="fas fa-upload"></i> Backup Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="backup-card">
+                            <div class="backup-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="backup-info">
+                                <h5>Auto Backup Settings</h5>
+                                <div class="form-check">
+                                    <input type="checkbox" id="enableAutoBackup">
+                                    <label for="enableAutoBackup">Enable Daily Auto Backup</label>
+                                </div>
+                                <select id="backupTime" class="form-control">
+                                    <option value="00:00">12:00 AM</option>
+                                    <option value="03:00">3:00 AM</option>
+                                    <option value="06:00">6:00 AM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="backup-history">
+                        <h5><i class="fas fa-history"></i> Recent Backups</h5>
+                        <div class="backups-list" id="backupsList">
+                            <div class="empty-state">
+                                <i class="fas fa-database fa-2x"></i>
+                                <p>No backups found</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Discount Modal -->
+    <div class="modal" id="discountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="discountModalTitle"><i class="fas fa-ticket-alt"></i> Add Discount Code</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="discountForm">
+                    <input type="hidden" id="discountId">
+                    <div class="form-group">
+                        <label>Discount Code *</label>
+                        <input type="text" id="discountCodeName" placeholder="e.g. WELCOME10" required
+                            style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Discount Type *</label>
+                            <select id="discountType" required>
+                                <option value="percentage">Percentage (%)</option>
+                                <option value="fixed">Fixed Amount</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Value *</label>
+                            <input type="number" id="discountValue" step="0.01" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Min. Order Amount</label>
+                            <input type="number" id="discountMinOrder" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="discountStatus">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description (Optional)</label>
+                        <textarea id="discountDescription" rows="2"
+                            placeholder="e.g. 10% off for new customers"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-action close-modal" data-tip="Cancel"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn btn-primary btn-action" id="saveDiscountBtn" form="discountForm" data-tip="Save Discount Code">
+                    <i class="fas fa-save"></i> Save Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu-manager.js"></script>
+    <script src="js/main.js?v=2"></script>
+    <script src="js/settings.js"></script>
+
+    <script>
+        function copySpinWinCode(btn) {
+            var text = (document.getElementById('spinWinCode') || {}).textContent || '';
+            function fallback() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                document.body.removeChild(ta);
+            }
+            function ok() {
+                var old = btn.innerHTML; btn.innerHTML = '\u2705 Copied!'; btn.style.opacity = '0.75';
+                setTimeout(function () { btn.innerHTML = old; btn.style.opacity = '1'; }, 1600);
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(ok, function () { fallback(); ok(); });
+            } else { fallback(); ok(); }
+        }
+    </script>
+</body>
+
+</html>

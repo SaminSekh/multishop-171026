@@ -1,0 +1,19 @@
+-- ============================================================
+-- DO NOT RUN THIS FILE.
+-- ------------------------------------------------------------
+-- This storefront (NovaCart/DolphinMore) was integrated into the
+-- multishop platform, so its Supabase tables are no longer created
+-- here. This reference schema defined its own `products`,
+-- `settings` and `profiles` tables which CONFLICT with the
+-- multishop schema and would break the storefront.
+--
+-- Instead run the single authoritative schema at the repository
+-- root:
+--
+--     ../../supabase-schema.sql
+--
+-- It creates every table the whole system needs, including the
+-- storefront tables (orders, users, reviews, bans) that resolve
+-- products/settings from the multishop tables (products,
+-- shops, shop_settings).
+-- ============================================================

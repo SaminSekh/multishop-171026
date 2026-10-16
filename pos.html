@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>POS - Shop Management System</title>
+    <link rel="stylesheet" href="css/style.css?v=15">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="pos-page">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-store"></i> <span id="shopNameHeader">Shop Name</span></h2>
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-role" id="userRole">Shop Admin</div>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+            <!-- Menu items will be loaded dynamically by MenuManager -->
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h3>POS</h3>
+            </div>
+            <div class="navbar-right">
+                <div class="pos-date-time" id="posDateTime">
+                    <div class="pos-time" id="currentTime">00:00:00</div>
+                    <div class="pos-date" id="currentDate">Date</div>
+                </div>
+                <!-- Mobile Cart Icon (visible only on mobile) -->
+                <button class="mobile-cart-toggle" id="mobileCartToggle">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count-badge" id="cartCountBadge">0</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="content">
+            <!-- Product Search & Filter -->
+            <div class="pos-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="productSearch" placeholder="Search products by name, SKU, or category...">
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="btn btn-sm" data-filter="all">All Products</button>
+                    <button class="btn btn-sm" data-filter="low-stock">Low Stock (< 10)</button>
+                            <button class="btn btn-sm" data-filter="category">By Category</button>
+                            <select id="categoryFilter" class="form-control">
+                                <option value="">All Categories</option>
+                                <!-- Categories will be loaded dynamically -->
+                            </select>
+                            <select id="typeFilter" class="form-control" style="display: none;">
+                                <option value="">All Types</option>
+                                <!-- Types will be loaded dynamically -->
+                            </select>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="pos-layout">
+                <!-- Left: Product Grid -->
+                <div class="product-grid-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-box"></i> Available Products</h4>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <label style="display:flex;align-items:center;gap:5px;font-size:0.75rem;color:#64748b;cursor:pointer;user-select:none;">
+                                <input type="checkbox" id="hideOutOfStock" checked style="width:14px;height:14px;accent-color:var(--primary);cursor:pointer;">
+                                Hide out of stock
+                            </label>
+                            <div class="product-count" id="productCount">0 products</div>
+                        </div>
+                    </div>
+
+                    <div class="product-grid" id="productGrid">
+                        <!-- Products will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-box-open fa-2x"></i>
+                            <p>No products available</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Cart & Checkout -->
+                <div class="cart-section mobile-collapsible" id="cartSection">
+                    <div class="cart-header">
+                        <div class="header-left">
+                            <button class="mobile-close-btn" id="closeCartBtn">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h4><i class="fas fa-shopping-cart"></i> Shopping Cart</h4>
+                        </div>
+                        <button class="btn btn-sm btn-danger btn-action" id="clearCartBtn" data-tip="Clear Cart">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+
+                    <!-- Cart Items -->
+                    <div class="cart-items" id="cartItems">
+                        <div class="empty-cart">
+                            <div class="empty-cart-icon">
+                                <i class="fas fa-shopping-basket"></i>
+                            </div>
+                            <h5>Your cart is empty</h5>
+                            <p>Select products from the list to start a sale</p>
+                        </div>
+                    </div>
+
+                    <!-- Cart Summary -->
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="cartSubtotal">0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Discount:</span>
+                            <div class="discount-input">
+                                <input type="number" id="discountAmount" placeholder="0" min="0">
+                                <span id="discountCurrency"></span>
+                            </div>
+                        </div>
+                        <div class="summary-row" id="deliveryChargeRow" style="display:none;">
+                            <span style="color:#475569;"><i class="fas fa-truck" style="font-size:0.75rem;margin-right:4px;"></i> Delivery:</span>
+                            <span id="deliveryChargeDisplay" style="color:#475569;">+₹0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total Amount:</span>
+                            <span id="cartTotal">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Section -->
+                    <div class="payment-section">
+                        <div class="payment-method">
+                            <h5><i class="fas fa-credit-card"></i> Payment Method</h5>
+                            <div class="payment-grid">
+                                <label class="payment-card active" data-method="cash">
+                                    <input type="radio" name="paymentMethod" value="cash" checked>
+                                    <div class="card-content">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <span>Cash</span>
+                                    </div>
+                                </label>
+                                <label class="payment-card" data-method="credit">
+                                    <input type="radio" name="paymentMethod" value="credit">
+                                    <div class="card-content">
+                                        <i class="fas fa-user-clock"></i>
+                                        <span>Credit</span>
+                                    </div>
+                                </label>
+                                <label class="payment-card" data-method="card">
+                                    <input type="radio" name="paymentMethod" value="card">
+                                    <div class="card-content">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Card</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Credit Buyer Info (Hidden by default) -->
+                        <div class="credit-info" id="creditInfo" style="display: none;">
+                            <h5><i class="fas fa-user"></i> Credit Buyer Information</h5>
+                            <div class="form-group">
+                                <input type="text" id="buyerName" placeholder="Buyer Name">
+                            </div>
+                            <div class="form-group">
+                                <input type="tel" id="buyerPhone" placeholder="Phone Number">
+                                <div id="buyerMemberBadge" style="display:none;margin-top:6px;padding:8px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:0.82rem;color:#047857;align-items:center;gap:8px;"></div>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="buyerAddress" placeholder="Address" rows="2"></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Amount Paid</label>
+                                    <input type="number" id="amountPaid" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Pending Amount</label>
+                                    <input type="number" id="pendingAmount" placeholder="0" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cash Payment -->
+                        <div class="cash-payment" id="cashPayment">
+                        </div>
+
+                        <!-- Delivery Charge (shown for all payment types) -->
+                        <div class="form-group" style="margin-top:10px;">
+                            <label style="font-size:0.82rem;font-weight:600;color:#475569;display:flex;align-items:center;gap:6px;">
+                                <i class="fas fa-truck" style="color:#64748b;"></i> Delivery Charge
+                                <span style="font-weight:400;color:#94a3b8;font-size:0.75rem;">(optional)</span>
+                            </label>
+                            <input type="number" id="deliveryCharge" placeholder="0" min="0" step="0.01"
+                                style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;outline:none;">
+                        </div>
+
+                        <!-- Optional Customer Details (for all payment types) -->
+                        <div class="customer-details-section" style="margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="document.getElementById('customerDetailsFields').style.display = document.getElementById('customerDetailsFields').style.display === 'none' ? 'block' : 'none'; this.querySelector('i.fa-chevron-down,i.fa-chevron-up').classList.toggle('fa-chevron-down'); this.querySelector('i.fa-chevron-down,i.fa-chevron-up').classList.toggle('fa-chevron-up');">
+                                <span style="font-size:0.85rem;font-weight:600;color:#475569;"><i class="fas fa-user-tag"></i> Customer Details (Optional)</span>
+                                <i class="fas fa-chevron-down" style="font-size:0.7rem;color:#94a3b8;"></i>
+                            </div>
+                            <div id="customerDetailsFields" style="display:none;margin-top:10px;">
+                                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                                    <input type="text" id="customerName" placeholder="Customer Name" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
+                                    <input type="tel" id="customerPhone" placeholder="Phone Number" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
+                                </div>
+                                <div id="customerMemberBadge" style="display:none;margin-bottom:8px;padding:8px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:0.82rem;color:#047857;align-items:center;gap:8px;"></div>
+                                <textarea id="saleRemark" placeholder="Remark / Note (optional)" rows="2" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;resize:vertical;"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="pos-actions-grid">
+                            <button class="btn btn-primary btn-action btn-lg" id="checkoutBtn">
+                                <i class="fas fa-check-circle"></i> Complete Sale
+                            </button>
+                            <div class="secondary-actions">
+                                <button class="btn btn-outline-secondary" id="holdSaleBtn" title="Hold Sale">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button class="btn btn-outline-info" id="printInvoiceBtn" title="Print Invoice">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="recent-transactions">
+                <div class="section-header">
+                    <h4><i class="fas fa-history"></i> Recent Transactions</h4>
+                    <button class="btn btn-sm btn-action" id="refreshTransactions" data-tip="Refresh Transactions">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="pos-tx-filters">
+                    <div class="pos-tx-search">
+                        <div class="input-wrap">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="txSearch" placeholder="Customer, phone, invoice, product, SKU...">
+                        </div>
+                        <button class="btn btn-action" id="txSearchBtn" type="button" data-tip="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="pos-tx-dates">
+                        <input type="date" id="txDateFrom" data-tip="From date" title="From date">
+                        <span>to</span>
+                        <input type="date" id="txDateTo" data-tip="To date" title="To date">
+                    </div>
+                    <button class="btn btn-action" id="txResetFilters" type="button" data-tip="Reset filters">
+                        <i class="fas fa-rotate-left"></i>
+                    </button>
+                </div>
+                <div class="transactions-list" id="transactionsList">
+                    <div class="empty-state">
+                        <i class="fas fa-receipt fa-2x"></i>
+                        <p>No recent transactions</p>
+                    </div>
+                </div>
+                <div id="posTxPagination"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cart Backdrop (for mobile) -->
+    <div class="cart-backdrop" id="cartBackdrop"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Product Quick View Modal -->
+    <div class="modal" id="productQuickView">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-eye"></i> Product Details</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="productDetails">
+                <!-- Product details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal" id="invoiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-receipt"></i> Invoice</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="invoiceContent">
+                <!-- Invoice will be generated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-action close-modal" data-tip="Close"><i class="fas fa-times"></i> Close</button>
+                <button class="btn btn-warning btn-action" id="spinRewardBtn" data-tip="Spin & Win">
+                    <i class="fas fa-gift"></i> Spin & Win
+                </button>
+                <button class="btn btn-primary btn-action" id="printActualBtn" data-tip="Print Invoice">
+                    <i class="fas fa-print"></i> Print Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restock / Refund Items Modal -->
+    <div class="modal" id="restockModal">
+        <div class="modal-content" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-undo-alt"></i> Restock / Refund Items</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 16px 20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;">
+                    <span id="restockInvoice" style="font-family:'Consolas','Menlo',monospace;font-weight:700;color:#1e293b;"></span>
+                    <span id="restockCustomer" style="font-size:0.78rem;color:#64748b;"></span>
+                </div>
+                <label style="display:inline-flex;align-items:center;gap:7px;font-size:0.82rem;font-weight:600;color:#475569;margin-bottom:10px;cursor:pointer;">
+                    <input type="checkbox" id="restockSelectAll" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer;">
+                    Select all items
+                </label>
+                <div id="restockItems" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding-right:4px;"></div>
+                <div style="border-top:1px solid #e2e8f0;margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <div style="font-size:0.82rem;color:#64748b;">Refund amount (selected items)</div>
+                    <div id="restockTotal" style="font-size:1.2rem;font-weight:800;color:#dc2626;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-action close-modal" data-tip="Cancel"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn btn-primary" id="confirmRestock">
+                    <i class="fas fa-undo-alt"></i> Restock &amp; Refund
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POS Members Club Action Lightbox Modal (Add / Deduct Points) -->
+    <div class="modal" id="posMemberActionModal">
+        <div class="modal-content" style="max-width: 480px; border-radius: 20px;">
+            <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0;">
+                <h3 id="posMemberActionTitle" style="margin:0;font-size:1.15rem;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-crown" style="color:#eab308;"></i> Members Club Action
+                </h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <div id="posMemberInfoCard" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+                    <div style="font-weight:700;font-size:1.05rem;color:#0f172a;" id="posMemberName">Member Name</div>
+                    <div style="font-size:0.83rem;color:#64748b;margin-top:2px;" id="posMemberPhone">Phone: -</div>
+                    <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1;font-size:0.85rem;">
+                        <div>Current Balance: <strong style="color:#059669;" id="posMemberCredits">0 pts</strong></div>
+                        <div>Worth: <strong id="posMemberCash">₹0.00</strong></div>
+                    </div>
+                </div>
+
+                <form id="posMemberActionForm">
+                    <input type="hidden" id="posMemberId">
+                    <input type="hidden" id="posActionType">
+
+                    <!-- ADD POINTS FIELDS -->
+                    <div id="posAddPointsFields" style="display:none;">
+                        <div class="form-group" id="posAddMemberTypeGroup" style="margin-bottom:14px;display:none;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Membership Type</label>
+                            <select id="posAddMemberType" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;background:#fff;">
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Purchase Bill Amount (₹)</label>
+                            <input type="number" id="posAddPurchaseAmount" placeholder="e.g. 500" step="0.01" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Points to Add (⭐)</label>
+                            <input type="number" id="posAddPointsInput" placeholder="100" min="1" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                            <div id="posAddPercentChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
+                            <small style="color:#64748b;font-size:0.75rem;margin-top:3px;display:block;">100 pts = ₹1.00 cash value</small>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Note / Description</label>
+                            <input type="text" id="posAddNoteInput" placeholder="POS Purchase Bill Credits" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                        </div>
+                    </div>
+
+                    <!-- DEDUCT / REDEEM POINTS FIELDS -->
+                    <div id="posDeductPointsFields" style="display:none;">
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Bill Amount (₹)</label>
+                            <input type="number" id="posDeductBillAmount" placeholder="e.g. 500" step="0.01" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Points to Redeem (Max: <span id="posMaxRedeemPts">0</span> pts)</label>
+                            <input type="number" id="posDeductPointsInput" placeholder="0" min="1" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                        </div>
+                        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:0.85rem;color:#047857;display:flex;align-items:center;justify-content:space-between;">
+                            <span>Discount Applied to Bill:</span>
+                            <strong id="posRedeemDiscountDisplay" style="font-size:1rem;color:#059669;">₹0.00</strong>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Note / Description</label>
+                            <input type="text" id="posDeductNoteInput" placeholder="POS Discount Redemption" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="padding:14px 0 0;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
+                        <button type="button" class="btn btn-secondary close-modal" style="padding:8px 16px;margin:0;">Cancel</button>
+                        <button type="submit" id="posSubmitActionBtn" class="btn btn-primary" style="padding:8px 20px;font-weight:700;margin:0;">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu-manager.js"></script>
+    <script src="js/main.js?v=2"></script>
+    <script src="js/pos.js?v=20"></script>
+</body>
+
+</html>

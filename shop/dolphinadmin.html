@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Admin — NovaCart</title>
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow">
+    <link rel="icon" href="assets/icon-192.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css?v=4">
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('novacart_theme');
+                var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) { }
+        })();
+    </script>
+</head>
+
+<body class="admin-body">
+    <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <symbol id="ai-plus" viewBox="0 0 24 24">
+                <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </symbol>
+            <symbol id="ai-close" viewBox="0 0 24 24">
+                <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </symbol>
+            <symbol id="ai-ban" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="m6 6 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </symbol>
+            <symbol id="ai-edit" viewBox="0 0 24 24">
+                <path d="M4 20h4L20 8l-4-4L4 16v4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                <path d="m14 6 4 4" fill="none" stroke="currentColor" stroke-width="2" />
+            </symbol>
+            <symbol id="ai-spark" viewBox="0 0 24 24">
+                <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                <path d="M18.5 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" fill="currentColor" />
+            </symbol>
+            <symbol id="ai-trash" viewBox="0 0 24 24">
+                <path d="M4 7h16M9.5 7V5h5v2M6.5 7l1 13h9l1-13" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-upload" viewBox="0 0 24 24">
+                <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-download" viewBox="0 0 24 24">
+                <path d="M12 4v12m0 0-4.5-4.5M12 16l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-image" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="2" />
+                <circle cx="8.5" cy="9.5" r="1.8" fill="currentColor" />
+                <path d="m4 17 5-5 3 3 3.5-4L20 17" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-search" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="M16.5 16.5 21 21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </symbol>
+            <symbol id="ai-check" viewBox="0 0 24 24">
+                <path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4"
+                    stroke-linecap="round" stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-minus" viewBox="0 0 24 24">
+                <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+            </symbol>
+            <symbol id="ai-box" viewBox="0 0 24 24">
+                <path d="M12 3.5 20 8v8l-8 4.5L4 16V8Z" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linejoin="round" />
+                <path d="m4 8 8 4.5L20 8M12 12.5V21" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-palette" viewBox="0 0 24 24">
+                <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-3.9-4-7.4-9-7.4Z"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                <circle cx="7.5" cy="10.5" r="1.2" fill="currentColor" />
+                <circle cx="12" cy="7.5" r="1.2" fill="currentColor" />
+                <circle cx="16.5" cy="10.5" r="1.2" fill="currentColor" />
+            </symbol>
+            <symbol id="ai-db" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="6" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" fill="none"
+                    stroke="currentColor" stroke-width="2" />
+            </symbol>
+            <symbol id="ai-refresh" viewBox="0 0 24 24">
+                <path d="M20 12a8 8 0 1 1-2.4-5.7" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" />
+                <path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-eye" viewBox="0 0 24 24">
+                <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" />
+            </symbol>
+            <symbol id="ai-pin" viewBox="0 0 24 24">
+                <path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linejoin="round" />
+                <circle cx="12" cy="11" r="2.2" fill="none" stroke="currentColor" stroke-width="2" />
+            </symbol>
+            <symbol id="ai-phone" viewBox="0 0 24 24">
+                <path d="M4 4h4l2 5-2.5 1.5a12 12 0 0 0 6 6L15 14l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 3 5a1 1 0 0 1 1-1Z"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-whatsapp" viewBox="0 0 24 24">
+                <path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.6-1.2A9 9 0 1 0 12 3Z" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linejoin="round" />
+                <path d="M8.8 8.2c.3-.7 1-.6 1.2-.2l.7 1.1c.1.3 0 .5-.2.7l-.5.4c-.2.2-.2.4-.1.6.4.8 1.1 1.5 1.9 1.9.2.1.4 0 .6-.1l.4-.5c.2-.2.4-.3.7-.2l1.1.7c.4.2.5.9-.2 1.2-1.6.7-3.4-.2-4.6-1.4s-2.1-3-1.4-4.6Z"
+                    fill="currentColor" />
+            </symbol>
+            <symbol id="ai-telegram" viewBox="0 0 24 24">
+                <path d="M21 4 3 11l5 1.7L10 19l2.5-3.3L17 19l4-15Z" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linejoin="round" />
+                <path d="m8 12.7 9-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </symbol>
+            <symbol id="ai-mail" viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </symbol>
+            <symbol id="ai-globe" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z" fill="none" stroke="currentColor"
+                    stroke-width="2" />
+            </symbol>
+        </defs>
+    </svg>
+
+    <div class="toast-stack" data-toasts aria-live="polite"></div>
+
+    <!-- ===================== LOGIN ===================== -->
+    <div class="admin-login" id="adminLogin">
+        <form class="login-card" id="loginForm">
+            <span class="login-brand">
+                <span class="brand-mark">N</span>
+                <span>NovaCart Admin</span>
+            </span>
+            <h1>Sign in</h1>
+            <p class="muted">Enter the admin password to manage the store.</p>
+            <label class="field">
+                <span>Password</span>
+                <input class="input" type="password" id="loginPassword" autocomplete="current-password" required>
+            </label>
+            <p class="login-error" id="loginError" hidden></p>
+            <button class="btn btn-primary btn-block" type="submit">Enter admin</button>
+            <a class="link-back" href="index.html">← Back to store</a>
+        </form>
+    </div>
+
+    <!-- ===================== APP ===================== -->
+    <div class="admin-app" id="adminApp" hidden>
+        <header class="admin-topbar">
+            <div class="admin-topbar-inner">
+                <span class="admin-logo">
+                    <span class="brand-mark" data-brand-logo>N</span>
+                    <span class="admin-logo-text">
+                        <b data-brand-name>NovaCart</b>
+                        <small>Admin panel</small>
+                    </span>
+                </span>
+                <div class="admin-topbar-actions">
+                    <span class="status-pill" id="backendStatus">…</span>
+                    <a class="btn btn-ghost btn-sm" href="index.html" target="_blank" rel="noopener">View store</a>
+                    <button class="btn btn-outline btn-sm" type="button" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+            <nav class="admin-tabs">
+                <button class="admin-tab" type="button" data-tab="products">Products</button>
+                <button class="admin-tab active" type="button" data-tab="orders">Orders</button>
+                <button class="admin-tab" type="button" data-tab="users">Users</button>
+                <button class="admin-tab" type="button" data-tab="appearance">Appearance</button>
+                <button class="admin-tab" type="button" data-tab="security">Security</button>
+                <button class="admin-tab" type="button" data-tab="data">Data</button>
+            </nav>
+        </header>
+
+        <main class="admin-main">
+            <!-- ---------- ORDERS ---------- -->
+            <section class="admin-panel active" data-panel="orders">
+                <div class="admin-toolbar">
+                    <div class="admin-search">
+                        <svg class="icon" aria-hidden="true"><use href="#ai-search"></use></svg>
+                        <input class="input" type="search" id="orderSearch" placeholder="Search by order id, customer, phone…">
+                    </div>
+                    <label class="select-all"><input type="checkbox" data-select-all="orders">Select all</label>
+                    <button class="btn btn-outline btn-danger btn-sm bulk-delete" type="button" data-bulk-delete="orders" hidden>Delete selected</button>
+                    <div class="admin-toolbar-right">
+                        <span class="muted" id="orderCount"></span>
+                        <button class="btn btn-outline btn-sm" type="button" id="orderExportBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-download"></use></svg>Export
+                        </button>
+                        <button class="btn btn-outline btn-sm" type="button" id="orderRefreshBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-refresh"></use></svg>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="order-filters" id="orderFilters" role="tablist" aria-label="Filter orders by status">
+                    <button class="filter-chip" type="button" data-filter="all">All <span class="chip-count" data-count="all">0</span></button>
+                    <button class="filter-chip active" type="button" data-filter="pending">Pending <span class="chip-count" data-count="pending">0</span></button>
+                    <button class="filter-chip" type="button" data-filter="processing">Processing <span class="chip-count" data-count="processing">0</span></button>
+                    <button class="filter-chip" type="button" data-filter="completed">Completed <span class="chip-count" data-count="completed">0</span></button>
+                    <button class="filter-chip" type="button" data-filter="rejected">Rejected <span class="chip-count" data-count="rejected">0</span></button>
+                </div>
+                <div class="admin-filters" id="orderAdvanced">
+                    <label class="filter-field"><span>Period</span>
+                        <select class="input" id="orderDate">
+                            <option value="all">All time</option>
+                            <option value="today">Today</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="month">This month</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Min ₹</span>
+                        <input class="input" type="number" min="0" id="orderMinAmount" placeholder="0">
+                    </label>
+                    <label class="filter-field"><span>Max ₹</span>
+                        <input class="input" type="number" min="0" id="orderMaxAmount" placeholder="Any">
+                    </label>
+                    <label class="filter-field"><span>Sort by</span>
+                        <select class="input" id="orderSort">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                            <option value="amount-desc">Amount: high to low</option>
+                            <option value="amount-asc">Amount: low to high</option>
+                        </select>
+                    </label>
+                    <button class="btn btn-ghost btn-sm filter-clear" type="button" data-clear="order">Clear filters</button>
+                </div>
+                <div class="order-list" id="orderList"></div>
+                <div class="pager" id="orderPager" hidden></div>
+            </section>
+
+            <!-- ---------- USERS ---------- -->
+            <section class="admin-panel" data-panel="users">
+                <div class="admin-toolbar">
+                    <div class="admin-search">
+                        <svg class="icon" aria-hidden="true"><use href="#ai-search"></use></svg>
+                        <input class="input" type="search" id="userSearch" placeholder="Search by name, mobile or id…">
+                    </div>
+                    <label class="select-all"><input type="checkbox" data-select-all="users">Select all</label>
+                    <button class="btn btn-outline btn-danger btn-sm bulk-delete" type="button" data-bulk-delete="users" hidden>Delete selected</button>
+                    <div class="admin-toolbar-right">
+                        <span class="muted" id="userCount"></span>
+                        <button class="btn btn-outline btn-sm" type="button" id="userExportBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-download"></use></svg>Export
+                        </button>
+                        <button class="btn btn-outline btn-sm" type="button" id="userRefreshBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-refresh"></use></svg>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-filters" id="userAdvanced">
+                    <label class="filter-field"><span>Joined</span>
+                        <select class="input" id="userDate">
+                            <option value="all">All time</option>
+                            <option value="today">Today</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Has orders</span>
+                        <select class="input" id="userOrders">
+                            <option value="all">All users</option>
+                            <option value="yes">With orders</option>
+                            <option value="no">No orders</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Sort by</span>
+                        <select class="input" id="userSort">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                            <option value="name-asc">Name A–Z</option>
+                            <option value="orders">Most orders</option>
+                            <option value="visits">Most visits</option>
+                            <option value="cart">Most in cart (not purchased)</option>
+                            <option value="removed">Most removed from cart</option>
+                        </select>
+                    </label>
+                    <button class="btn btn-ghost btn-sm filter-clear" type="button" data-clear="user">Clear filters</button>
+                </div>
+                <div class="user-list" id="userList"></div>
+                <div class="pager" id="userPager" hidden></div>
+            </section>
+
+            <!-- ---------- PRODUCTS ---------- -->
+            <section class="admin-panel" data-panel="products">
+                <div class="admin-toolbar">
+                    <div class="admin-search">
+                        <svg class="icon" aria-hidden="true"><use href="#ai-search"></use></svg>
+                        <input class="input" type="search" id="productSearch" placeholder="Search products…">
+                    </div>
+                    <label class="select-all"><input type="checkbox" data-select-all="products">Select all</label>
+                    <button class="btn btn-outline btn-danger btn-sm bulk-delete" type="button" data-bulk-delete="products" hidden>Delete selected</button>
+                    <button class="btn btn-outline btn-sm bulk-price" type="button" data-bulk-price="products" hidden>Adjust prices</button>
+                    <div class="admin-toolbar-right">
+                        <span class="muted" id="productCount"></span>
+                        <button class="btn btn-outline btn-sm" type="button" id="productImportBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-upload"></use></svg>Import
+                        </button>
+                        <input type="file" id="productImportInput" accept=".csv,text/csv,application/json,.json" hidden>
+                        <button class="btn btn-outline btn-sm" type="button" id="productExportBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-download"></use></svg>Export
+                        </button>
+                        <button class="btn btn-primary" type="button" id="newProductBtn">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>New product
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-filters bulk-price-bar" id="bulkPriceBar" hidden>
+                    <span class="muted bulk-price-count" id="bulkPriceCount"></span>
+                    <label class="filter-field"><span>Field</span>
+                        <select class="input" id="bulkPriceField">
+                            <option value="price">Selling price (₹)</option>
+                            <option value="mrp">MRP</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Action</span>
+                        <select class="input" id="bulkPriceOp">
+                            <option value="increase">Increase by</option>
+                            <option value="decrease">Decrease by</option>
+                            <option value="set">Set to</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Type</span>
+                        <select class="input" id="bulkPriceType">
+                            <option value="amount">₹ amount</option>
+                            <option value="percent">% percent</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Value</span>
+                        <input class="input" type="number" min="0" step="1" id="bulkPriceValue" placeholder="0">
+                    </label>
+                    <button class="btn btn-primary btn-sm" type="button" id="bulkPriceApply">Apply</button>
+                    <button class="btn btn-ghost btn-sm" type="button" id="bulkPriceCancel">Cancel</button>
+                </div>
+                <div class="admin-filters" id="productAdvanced">
+                    <label class="filter-field"><span>Category</span>
+                        <select class="input" id="productCategoryFilter">
+                            <option value="all">All categories</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Availability</span>
+                        <select class="input" id="productStockFilter">
+                            <option value="all">All products</option>
+                            <option value="in">In stock</option>
+                            <option value="out">Out of stock</option>
+                            <option value="hidden">Hidden</option>
+                        </select>
+                    </label>
+                    <label class="filter-field"><span>Min ₹</span>
+                        <input class="input" type="number" min="0" id="productMinAmount" placeholder="0">
+                    </label>
+                    <label class="filter-field"><span>Max ₹</span>
+                        <input class="input" type="number" min="0" id="productMaxAmount" placeholder="Any">
+                    </label>
+                    <label class="filter-field"><span>Sort by</span>
+                        <select class="input" id="productSort">
+                            <option value="default">Default</option>
+                            <option value="name-asc">Name A–Z</option>
+                            <option value="name-desc">Name Z–A</option>
+                            <option value="price-asc">Price: low to high</option>
+                            <option value="price-desc">Price: high to low</option>
+                            <option value="stock-asc">Stock: low to high</option>
+                            <option value="stock-desc">Stock: high to low</option>
+                        </select>
+                    </label>
+                    <button class="btn btn-ghost btn-sm filter-clear" type="button" data-clear="product">Clear filters</button>
+                </div>
+                <p class="hint">Export downloads every product as an editable CSV. Import it back to add or update rows —
+                    existing ids are skipped, new ids added. Put multiple values (images, sizes, badges, highlights) in one
+                    cell separated by <b>|</b>. Leave <b>id</b> empty for new rows. Variants column format:
+                    <b>Name|#hex|imageURL|S,M,L|qty|S=3,M=4</b> (separate variants with <b>;</b>).</p>
+                <div class="product-table" id="productList"></div>
+                <div class="pager" id="productPager" hidden></div>
+            </section>
+
+            <!-- ---------- APPEARANCE ---------- -->
+            <section class="admin-panel" data-panel="appearance">
+                <form class="panel-form" id="settingsForm">
+                    <h2>Brand</h2>
+                    <div class="form-grid two">
+                        <label class="field"><span>Store name</span>
+                            <input class="input" name="storeName" placeholder="NovaCart"></label>
+                        <label class="field"><span>Accent word (styled)</span>
+                            <input class="input" name="brandAccent" placeholder="Cart"></label>
+                    </div>
+                    <div class="field">
+                        <span>Logo</span>
+                        <div class="logo-row">
+                            <span class="logo-preview" id="logoPreview"></span>
+                            <input class="input" name="logoUrl" placeholder="https://… or upload">
+                            <button class="btn btn-outline btn-sm" type="button" id="logoUploadBtn">
+                                <svg class="icon" aria-hidden="true"><use href="#ai-upload"></use></svg>Upload
+                            </button>
+                            <input type="file" id="logoUploadInput" accept="image/*" hidden>
+                        </div>
+                        <small class="hint">Leave empty to use the first letter of the store name.</small>
+                    </div>
+                    <div class="field">
+                        <span>App / APK Icon</span>
+                        <div class="logo-row">
+                            <span class="logo-preview" id="apkIconPreview"></span>
+                            <input class="input" name="apkIconUrl" placeholder="https://… or upload APK icon">
+                            <button class="btn btn-outline btn-sm" type="button" id="apkIconUploadBtn">
+                                <svg class="icon" aria-hidden="true"><use href="#ai-upload"></use></svg>Upload
+                            </button>
+                            <input type="file" id="apkIconUploadInput" accept="image/*" hidden>
+                        </div>
+                        <small class="hint">Custom icon for PWA / APK install banner and menu item. Defaults to Store Logo if empty.</small>
+                    </div>
+                    <div class="form-grid two">
+                        <label class="field"><span>Tagline</span>
+                            <input class="input" name="tagline" placeholder="Shop Everything You Love"></label>
+                        <label class="field"><span>Free shipping over (₹)</span>
+                            <input class="input" type="number" min="0" name="freeShippingMin">
+                            <small class="hint">Orders at or above this subtotal ship free. Set to <b>0</b> to always charge the delivery fee.</small></label>
+                    </div>
+                    <div class="form-grid two">
+                        <label class="field"><span>Delivery charge (₹)</span>
+                            <input class="input" type="number" min="0" name="shippingFee" placeholder="49">
+                            <small class="hint">Flat fee added at checkout when the order is below the free-shipping threshold. Set to <b>0</b> for free delivery on every order.</small></label>
+                        <label class="field"><span>GST percentage (%)</span>
+                            <input class="input" type="number" min="0" max="100" step="0.01" name="gstPercent" placeholder="18">
+                            <small class="hint">Applied to the cart subtotal at checkout. Set to <b>0</b> to charge no GST and hide the GST line everywhere.</small></label>
+                    </div>
+                    <label class="field"><span>Meta description</span>
+                        <textarea class="input" name="metaDescription" rows="2"></textarea></label>
+
+                    <h2>Homepage hero</h2>
+                    <div class="field">
+                        <span>Hero carousel images</span>
+                        <div class="slides-list" id="heroSlides"></div>
+                        <button class="btn btn-outline btn-sm" type="button" id="heroSlideAdd">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>Add image
+                        </button>
+                        <small class="hint">Images only, no text. They auto-slide on the storefront and scale to every screen. Upload a wide banner (around 1920×800) for best results. With no images the hero is hidden.</small>
+                    </div>
+
+                    <h2>Colors &amp; misc</h2>
+                    <div class="form-grid two">
+                        <label class="field"><span>Primary color</span>
+                            <span class="color-input"><input type="color" name="primaryColor"><input class="input" name="primaryColorText" readonly></span>
+                        </label>
+                        <label class="field"><span>Accent color</span>
+                            <span class="color-input"><input type="color" name="accentColor"><input class="input" name="accentColorText" readonly></span>
+                        </label>
+                    </div>
+                    <label class="field"><span>Promo strip text</span>
+                        <input class="input" name="promoText"></label>
+                    <label class="field"><span>Footer blurb</span>
+                        <textarea class="input" name="footerBlurb" rows="2"></textarea></label>
+
+                    <h2>Contact channels</h2>
+                    <div class="field">
+                        <span>Contact methods</span>
+                        <div class="contact-list" id="contactList"></div>
+                        <button class="btn btn-outline btn-sm" type="button" id="contactAdd">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>Add contact
+                        </button>
+                        <small class="hint">Add as many as you like — call, WhatsApp, Telegram, email or a map link.
+                            They show in the storefront footer's <b>Contact</b> column.</small>
+                    </div>
+
+                    <h2>Footer links</h2>
+                    <div class="field">
+                        <span>Help column</span>
+                        <div class="link-list" id="helpLinks"></div>
+                        <button class="btn btn-outline btn-sm" type="button" id="helpLinkAdd">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>Add help link
+                        </button>
+                    </div>
+                    <div class="field">
+                        <span>Company column</span>
+                        <div class="link-list" id="companyLinks"></div>
+                        <button class="btn btn-outline btn-sm" type="button" id="companyLinkAdd">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>Add company link
+                        </button>
+                        <small class="hint">Set a label and a destination. Use an in-store link like
+                            <code>#/orders</code>, a page like <code>#/info/about</code>, or a full
+                            <code>https://…</code> address for external sites.</small>
+                    </div>
+                    <div class="field">
+                        <span>Info pages</span>
+                        <div class="page-list" id="infoPages"></div>
+                        <button class="btn btn-outline btn-sm" type="button" id="infoPageAdd">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>Add page
+                        </button>
+                        <small class="hint">Each page opens at <code>#/info/&lt;slug&gt;</code>. Point a footer link
+                            above at it, e.g. <code>#/info/about</code>. One paragraph per line.</small>
+                    </div>
+
+                    <div class="panel-actions">
+                        <button class="btn btn-ghost" type="button" id="settingsResetBtn">Reset to defaults</button>
+                        <button class="btn btn-primary" type="submit">Save appearance</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ---------- SECURITY ---------- -->
+            <section class="admin-panel" data-panel="security">
+                <form class="panel-form" id="adminPwForm">
+                    <h2>Admin password</h2>
+                    <p class="muted" id="adminPwStatus"></p>
+                    <div class="field" id="adminPwCurrentWrap" hidden>
+                        <span>Current password</span>
+                        <input class="input" type="password" id="adminPwCurrent" autocomplete="current-password">
+                        <small class="hint">Required only because a custom password is already set.</small>
+                    </div>
+                    <div class="form-grid two">
+                        <label class="field"><span>New password</span>
+                            <input class="input" type="password" id="adminPwNew" autocomplete="new-password"></label>
+                        <label class="field"><span>Confirm new password</span>
+                            <input class="input" type="password" id="adminPwConfirm" autocomplete="new-password"></label>
+                    </div>
+                    <small class="hint">At least 4 characters. Your password is salted and hashed, then saved to your Supabase settings row — it is never kept in the page's JavaScript.</small>
+                    <div class="panel-actions">
+                        <button class="btn btn-ghost" type="button" id="adminPwReset" hidden>Remove custom password</button>
+                        <button class="btn btn-primary" type="submit">Update password</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ---------- DATA ---------- -->
+            <section class="admin-panel" data-panel="data">
+                <div class="panel-form">
+                    <h2>Catalog data</h2>
+                    <p class="hint" id="storageHint"></p>
+                    <div class="data-actions">
+                        <button class="btn btn-outline" type="button" id="exportBtn">Export JSON</button>
+                        <button class="btn btn-outline" type="button" id="importBtn">Import JSON</button>
+                        <input type="file" id="importInput" accept="application/json,.json" hidden>
+                        <button class="btn btn-outline btn-danger" type="button" id="clearLocalBtn">Clear local cache</button>
+                    </div>
+                    <p class="hint">Export downloads the full catalog as JSON, including every product with its images,
+                        colours, sizes and prices — re-import it any time for an exact restore. Import skips products whose
+                        id already exists and adds only new ones.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===================== PRODUCT EDITOR ===================== -->
+    <div class="modal" id="editorModal" hidden>
+        <div class="modal-scrim" data-close-modal></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+            <div class="modal-head">
+                <h2 id="editorTitle">New product</h2>
+                <button class="icon-btn" type="button" data-close-modal aria-label="Close">
+                    <svg class="icon" aria-hidden="true"><use href="#ai-close"></use></svg>
+                </button>
+            </div>
+            <form class="modal-body" id="productForm">
+                <div class="form-grid two">
+                    <label class="field"><span>Product name *</span>
+                        <input class="input" name="name" required></label>
+                    <label class="field"><span>Brand</span>
+                        <input class="input" name="brand"></label>
+                </div>
+                <div class="form-grid two">
+                    <label class="field"><span>Category</span>
+                        <input class="input" name="category" list="categoryOptions" placeholder="Electronics">
+                        <datalist id="categoryOptions"></datalist>
+                    </label>
+                    <label class="field"><span>Product ID</span>
+                        <input class="input" name="id" placeholder="Leave blank to auto-generate">
+                        <small class="hint">Auto-generated if left blank. Editing an existing ID renames the product.</small></label>
+                </div>
+                <div class="form-grid two">
+                    <label class="field"><span>Selling price (₹)</span>
+                        <input class="input" type="number" min="0" step="1" name="price"></label>
+                    <label class="field"><span>MRP (₹)</span>
+                        <input class="input" type="number" min="0" step="1" name="mrp"></label>
+                </div>
+                <div class="form-grid two">
+                    <label class="field"><span>Stock</span>
+                        <input class="input" type="number" min="0" step="1" name="stock">
+                        <small class="hint">Used when colours have no per-variant Qty. If any colour sets Qty, total stock is their sum.</small></label>
+                    <label class="field"><span>Sort order</span>
+                        <input class="input" type="number" step="1" name="sortOrder"></label>
+                </div>
+                <div class="form-grid two">
+                    <label class="field"><span>Rating (0–5)</span>
+                        <input class="input" type="number" min="0" max="5" step="0.1" name="rating"></label>
+                    <label class="field"><span>Review count</span>
+                        <input class="input" type="number" min="0" step="1" name="reviewCount"></label>
+                </div>
+                <div class="field">
+                    <span>Badges &amp; visibility</span>
+                    <div class="check-row">
+                        <label class="switch"><input type="checkbox" name="badgeNew"><span>New</span></label>
+                        <label class="switch"><input type="checkbox" name="badgeBestseller"><span>Bestseller</span></label>
+                        <label class="switch"><input type="checkbox" name="visible" checked><span>Visible to shoppers</span></label>
+                    </div>
+                    <small class="hint">A “sale” badge is added automatically when MRP is above the selling price.</small>
+                </div>
+
+                <div class="field">
+                    <span>Colors / variants</span>
+                    <div class="variant-list" id="colorList"></div>
+                    <button class="btn btn-ghost btn-sm" type="button" id="addColorBtn">
+                        <svg class="icon" aria-hidden="true"><use href="#ai-plus"></use></svg>Add color</button>
+                    <small class="hint">Each colour can carry its own image and its own sizes. Product image and size lists are built from these variants.</small>
+                </div>
+
+                <label class="field"><span>Keywords (comma separated)</span>
+                    <input class="input" name="keywords" placeholder="shirt, cotton"></label>
+
+                <div class="field">
+                    <span class="field-head">
+                        <span>Highlights (one per line)</span>
+                        <button class="btn btn-ghost btn-sm" type="button" id="autoFillBtn"
+                            title="Generate highlights and description from the product details above">
+                            <svg class="icon" aria-hidden="true"><use href="#ai-spark"></use></svg>Auto-fill</button>
+                    </span>
+                    <textarea class="input" name="highlights" rows="3"></textarea>
+                </div>
+                <label class="field"><span>Description</span>
+                    <textarea class="input" name="description" rows="3"></textarea></label>
+
+                <div class="modal-foot">
+                    <button class="btn btn-outline" type="button" data-close-modal>Cancel</button>
+                    <button class="btn btn-primary" type="submit" id="saveProductBtn">Save product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== ORDER DETAILS ===================== -->
+    <div class="modal" id="orderModal" hidden>
+        <div class="modal-scrim" data-close-order></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+            <div class="modal-head">
+                <h2 id="orderModalTitle">Order details</h2>
+                <button class="icon-btn" type="button" data-close-order aria-label="Close">
+                    <svg class="icon" aria-hidden="true"><use href="#ai-close"></use></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="orderModalBody"></div>
+        </div>
+    </div>
+
+    <!-- ===================== USER DETAILS ===================== -->
+    <div class="modal" id="userModal" hidden>
+        <div class="modal-scrim" data-close-user></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
+            <div class="modal-head">
+                <h2 id="userModalTitle">User details</h2>
+                <button class="icon-btn" type="button" data-close-user aria-label="Close">
+                    <svg class="icon" aria-hidden="true"><use href="#ai-close"></use></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="userModalBody"></div>
+        </div>
+    </div>
+
+    <!-- ===================== USER LIST LIGHTBOX ===================== -->
+    <div class="modal" id="userListModal" hidden>
+        <div class="modal-scrim" data-close-userlist></div>
+        <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="userListModalTitle">
+            <div class="modal-head">
+                <h2 id="userListModalTitle">List</h2>
+                <button class="icon-btn" type="button" data-close-userlist aria-label="Close">
+                    <svg class="icon" aria-hidden="true"><use href="#ai-close"></use></svg>
+                </button>
+            </div>
+            <div class="admin-toolbar ulm-toolbar" id="userListModalToolbar"></div>
+            <div class="modal-body" id="userListModalBody"></div>
+            <div class="pager" id="userListModalPager" hidden></div>
+        </div>
+    </div>
+
+    <!-- ===================== QUICK STOCK ===================== -->
+    <div class="modal" id="stockModal" hidden>
+        <div class="modal-scrim" data-close-stock></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stockModalTitle">
+            <div class="modal-head">
+                <h2 id="stockModalTitle">Stock</h2>
+                <button class="icon-btn" type="button" data-close-stock aria-label="Close">
+                    <svg class="icon" aria-hidden="true"><use href="#ai-close"></use></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="stockModalBody"></div>
+        </div>
+    </div>
+
+    <script>window.NC = window.NC || {};</script>
+    <script src="js/connect.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/backend.js"></script>
+    <script src="js/admin.js?v=7"></script>
+</body>
+
+</html>

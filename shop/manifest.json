@@ -1,0 +1,56 @@
+{
+    "name": "DolphinMore — Your style our collection.",
+    "short_name": "DolphinMore",
+    "description": "Your style our collection. Browse electronics, fashion, footwear, home, beauty, sports, books and accessories.",
+    "id": "./index.html",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "display_override": ["standalone", "minimal-ui", "browser"],
+    "orientation": "portrait-primary",
+    "background_color": "#f4f5fa",
+    "theme_color": "#4f46e5",
+    "lang": "en-IN",
+    "dir": "ltr",
+    "categories": ["shopping", "lifestyle"],
+    "icons": [
+        {
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Your cart",
+            "short_name": "Cart",
+            "url": "./index.html#/cart",
+            "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Wishlist",
+            "short_name": "Saved",
+            "url": "./index.html#/wishlist",
+            "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "My orders",
+            "short_name": "Orders",
+            "url": "./index.html#/orders",
+            "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+        }
+    ]
+}

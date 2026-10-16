@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Replace https://yourdomain.com with your public storefront domain.
+  Add one <url> entry per shop slug (the slug is the shop's public
+  address, e.g. https://yourdomain.com/shop/dolphin or
+  https://yourdomain.com/dolphin).
+  Admin/dashboard pages are intentionally excluded (they are noindex).
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <!-- Storefront entry -->
+    <url>
+        <loc>https://yourdomain.com/shop/</loc>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- Example shop slug — duplicate this block for every shop -->
+    <url>
+        <loc>https://yourdomain.com/shop/dolphin</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+</urlset>

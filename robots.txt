@@ -1,0 +1,37 @@
+# ------------------------------------------------------------
+# robots.txt
+# Admin/management pages are marked "noindex, nofollow" in their
+# own <head>, and their assets are blocked here.
+# Only the public storefront (slug sites) should be indexed.
+# ------------------------------------------------------------
+User-agent: *
+Allow: /
+
+# Public storefront (slug sites resolve here) — keep crawlable
+Allow: /shop/
+
+# App assets have no SEO value
+Disallow: /css/
+Disallow: /js/
+Disallow: /assets/
+
+# Admin / dashboard pages (belt-and-suspenders alongside the
+# noindex meta tags in each page)
+Disallow: /index.html
+Disallow: /dashboard.html
+Disallow: /pos.html
+Disallow: /inventory.html
+Disallow: /sales.html
+Disallow: /orders.html
+Disallow: /credit.html
+Disallow: /expenses.html
+Disallow: /payments.html
+Disallow: /subscription.html
+Disallow: /settings.html
+Disallow: /users.html
+Disallow: /audit.html
+Disallow: /activity.html
+Disallow: /super-admin.html
+Disallow: /spin.html
+
+Sitemap: https://yourdomain.com/sitemap.xml

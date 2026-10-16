@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow">
+    <title>Spin & Win - Shop Reward System</title>
+    <link rel="stylesheet" href="css/style.css?v=7" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+</head>
+<body class="spin-page">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-store"></i> <span id="shopNameHeader">Shop Name</span></h2>
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-role" id="userRole">Shop Admin</div>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+            <!-- Menu items loaded dynamically by MenuManager -->
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h3 style="display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-gift" style="color:var(--gold-primary, #f59e0b);"></i> Spin & Win Rewards
+                </h3>
+            </div>
+            <div class="navbar-right">
+<a href="settings.html" class="btn btn-secondary btn-action" data-tip="Shop Settings" style="gap:6px;display:inline-flex;align-items:center;">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </div>
+        </nav>
+
+        <div class="content">
+<!-- Ambient Atmospheric Glows -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <!-- Confetti Celebration Overlay -->
+  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <button id="tabMenuToggle" class="hamburger-btn" aria-expanded="false" aria-controls="tabNav" aria-label="Open menu">
+          <span>☰</span>
+        </button>
+        <div class="brand-badge">
+          <div class="brand-icon-wrap">
+            <span class="brand-icon">🎁</span>
+          </div>
+          <div class="brand-text">
+            <h1 class="shop-name-display" id="shopNameDisplay">Lucky Shop</h1>
+            <span class="brand-tagline">PREMIUM REWARDS WHEEL</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="soundToggleBtn" class="icon-btn sound-toggle-btn" aria-label="Toggle Sound" title="Sound Effects">
+          <span id="soundIcon">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="tab-nav-wrap">
+      <nav id="tabNav" class="tab-nav" aria-label="Main sections">
+        <button type="button" class="tab-btn is-active" data-tab-target="customer-spin" aria-selected="true">
+          <span class="tab-icon">🎯</span> Customer Spin
+        </button>
+        <button type="button" class="tab-btn" data-tab-target="settings" aria-selected="false">
+          <span class="tab-icon">⚙️</span> Settings Panel
+        </button>
+        <button type="button" class="tab-btn" data-tab-target="prizes" aria-selected="false">
+          <span class="tab-icon">🏆</span> Prize History
+        </button>
+        <button type="button" class="tab-btn" data-tab-target="members" aria-selected="false">
+          <span class="tab-icon">👑</span> Members Club
+        </button>
+      </nav>
+    </div>
+
+    <!-- Customer Spin Tab -->
+    <section class="tab-panel is-active" data-tab-panel="customer-spin">
+      <section class="layout">
+        <!-- Spin Card -->
+        <article class="card spin-card">
+          <div class="card-header">
+            <div>
+              <h2>Spin & Win Reward</h2>
+              <p class="muted">Enter customer purchase details, spin the lucky wheel, and award instant prizes.</p>
+            </div>
+            <button type="button" id="fullscreenBtn" class="btn btn-secondary" title="Open the wheel in fullscreen">
+              <span class="btn-icon">🖥️</span> Fullscreen
+            </button>
+          </div>
+
+          <div class="form-grid">
+            <label class="input-field">
+              <span class="field-label">Customer Name <span class="required-star">*</span></span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">👤</span>
+                <input type="text" id="customerName" placeholder="e.g. Aisyah" autocomplete="off" />
+              </div>
+            </label>
+            <label class="input-field">
+              <span class="field-label">WhatsApp / Phone Number</span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">📱</span>
+                <input type="tel" id="customerNumber" placeholder="e.g. +91 98765 43210" autocomplete="off" />
+              </div>
+            </label>
+            <label class="input-field">
+              <span class="field-label">Purchase Amount <span class="required-star">*</span></span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">💰</span>
+                <input type="number" id="purchaseAmount" placeholder="e.g. 120.00" min="0" step="0.01" autocomplete="off" />
+              </div>
+            </label>
+            <label class="input-field">
+              <span class="field-label">Purchased Item / Spin Wheel <span class="required-star">*</span></span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">🛍️</span>
+                <select id="spinConditionSelect" aria-label="Purchased Item Condition">
+                  <!-- Populated dynamically: e.g. 👖 Jeans Pant (Wheel 1), 👔 Shirt (Wheel 2) -->
+                </select>
+              </div>
+            </label>
+          </div>
+
+          <div id="customerMemberBadge" class="customer-member-badge hidden">
+            <span class="badge-vip-icon">👑</span>
+            <span id="customerMemberBadgeText" class="badge-text">Club Member: Rahul Sharma | 250 Credits (≈ ₹27.50)</span>
+            <button type="button" id="customerMemberQuickCreditBtn" class="badge-quick-btn">+ Add Credits</button>
+          </div>
+
+          <div class="wheel-container">
+            <div class="wheel-wrap">
+              <div class="wheel-rim-glow"></div>
+              <div class="wheel-pointer" id="wheelPointer" aria-hidden="true">
+                <div class="pointer-needle"></div>
+                <div class="pointer-center-pin"></div>
+              </div>
+              <canvas id="wheelCanvas" width="480" height="480"></canvas>
+            </div>
+            <div class="wheel-tip-row">
+              <span class="wheel-tip-icon">👆</span>
+              <span id="wheelHint" class="wheel-hint">Tap the wheel to spin</span>
+            </div>
+            <div id="wheelWinPill" class="wheel-win-pill hidden">
+              <span class="win-pill-icon">🎯</span>
+              <span id="wheelWinPillText">Prize Locked!</span>
+            </div>
+          </div>
+
+          <div class="spin-time-control-row">
+            <span class="spin-time-label">⏱️ Spin Time:</span>
+            <div class="spin-time-pills" id="spinTimePills" role="radiogroup" aria-label="Spin Duration">
+              <button type="button" class="time-pill-btn" data-duration="3" aria-label="Fast 3 seconds">⚡ Fast (3s)</button>
+              <button type="button" class="time-pill-btn is-active" data-duration="5" aria-label="Standard 5 seconds">🎯 Standard (5s)</button>
+              <button type="button" class="time-pill-btn" data-duration="8" aria-label="Dramatic 8 seconds">🔥 Dramatic (8s)</button>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="saveBtn" class="btn btn-secondary" disabled>
+              <span class="btn-icon">💾</span> Save to Sheets
+            </button>
+            <button id="downloadBtn" class="btn btn-ghost" disabled>
+              <span class="btn-icon">📥</span> Download Coupon
+            </button>
+            <button id="shareBtn" class="btn btn-ghost btn-whatsapp" disabled>
+              <span class="btn-icon">💬</span> Share WhatsApp
+            </button>
+          </div>
+        </article>
+
+        <!-- Result Card -->
+        <article class="card result-card">
+          <div class="card-header">
+            <div>
+              <h2>Coupon & Result</h2>
+              <p class="muted">Generated voucher ready to share with customer.</p>
+            </div>
+          </div>
+
+          <div id="resultEmpty" class="result-placeholder">
+            <div class="placeholder-icon">🎟️</div>
+            <h3>No Active Coupon</h3>
+            <p class="muted">Fill customer details and spin the wheel to unlock reward record and QR voucher.</p>
+          </div>
+
+          <div id="resultDetails" class="result-details hidden">
+            <div class="result-badge-row">
+              <span class="result-badge-label">OFFICIAL WINNER</span>
+              <span id="resultPrize" class="result-prize-title">-</span>
+            </div>
+            <div class="result-meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">ID</span>
+                <span id="resultRecordId" class="meta-val highlight-id">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Customer</span>
+                <span id="resultCustomer" class="meta-val">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Mobile</span>
+                <span id="resultCustomerNumber" class="meta-val">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Amount</span>
+                <span id="resultAmount" class="meta-val">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Status</span>
+                <span id="resultStatus" class="meta-val">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Shop</span>
+                <span id="resultShop" class="meta-val">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Issued</span>
+                <span id="resultDate" class="meta-val">-</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Valid Until</span>
+                <span id="resultExpiry" class="meta-val">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="coupon-preview-wrap">
+            <canvas id="couponCanvas" width="960" height="700" aria-label="Coupon image preview"></canvas>
+          </div>
+        </article>
+      </section>
+    </section>
+
+    <!-- Settings Panel Tab -->
+    <section class="card settings-card tab-panel hidden" data-tab-panel="settings">
+      <div class="settings-header">
+        <div class="settings-title-wrap">
+          <span class="header-icon">⚙️</span>
+          <div>
+            <h2>Settings Panel</h2>
+            <p class="muted">Configure shop branding, prize list, expiry rules, and Google Sheets synchronization.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <label class="input-field">
+          <span class="field-label">Shop Display Name</span>
+          <div class="input-wrap">
+            <span class="input-prefix-icon">🏪</span>
+            <input type="text" id="shopNameInput" />
+          </div>
+        </label>
+
+        <label class="input-field">
+          <span class="field-label">Shop Logo Image URL</span>
+          <div class="input-wrap">
+            <span class="input-prefix-icon">🔗</span>
+            <input type="url" id="shopLogoUrlInput" placeholder="https://example.com/logo.png" />
+          </div>
+        </label>
+
+        <label class="input-field">
+          <span class="field-label">Prize Expiry (Hours)</span>
+          <div class="input-wrap">
+            <span class="input-prefix-icon">⏱️</span>
+            <input type="number" id="expiryHoursInput" min="0" step="1" />
+          </div>
+        </label>
+
+        <label class="input-field">
+          <span class="field-label">Spin Duration (Seconds)</span>
+          <div class="input-wrap">
+            <span class="input-prefix-icon">⏳</span>
+            <input type="number" id="spinDurationInput" min="2" max="15" step="1" value="5" />
+          </div>
+        </label>
+
+        <div class="manual-time-box">
+          <label class="checkbox-label">
+            <input type="checkbox" id="manualDateToggle" />
+            <span class="checkbox-custom"></span>
+            <span>Use manual timestamp instead of current device time</span>
+          </label>
+          <label class="input-field">
+            <span class="field-label">Manual Date & Time</span>
+            <div class="input-wrap">
+              <span class="input-prefix-icon">📅</span>
+              <input type="datetime-local" id="manualDateInput" />
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="prize-manager">
+        <div class="prize-manager-header">
+          <div>
+            <h3>Multi-Condition Spin Setup</h3>
+            <p class="muted">Set what product the user buys (e.g. Jeans Pant vs Shirt) and customize what gifts & prizes appear on that specific wheel.</p>
+          </div>
+          <button type="button" id="addConditionBtn" class="btn btn-secondary btn-small">
+            <span>➕ Add New Condition</span>
+          </button>
+        </div>
+
+        <!-- Condition Tabs / Switcher Bar -->
+        <div class="condition-tabs-bar" id="conditionTabsBar" role="tablist" aria-label="Spin Conditions">
+          <!-- Dynamic condition chips: e.g. [👖 Jeans Pant (Wheel 1)] [👔 Shirt (Wheel 2)] -->
+        </div>
+
+        <!-- Selected Condition Settings Card -->
+        <div class="condition-editor-card" id="conditionEditorCard">
+          <div class="condition-editor-header">
+            <div class="condition-editor-title-wrap">
+              <span class="condition-badge-active" id="conditionBadgeActive">Active Wheel Setup</span>
+              <h4 id="conditionEditorTitle">Condition Settings</h4>
+            </div>
+            <button type="button" id="deleteConditionBtn" class="btn btn-danger btn-small" title="Delete this condition">
+              <span>🗑️ Delete Condition</span>
+            </button>
+          </div>
+
+          <div class="condition-fields-grid">
+            <label class="input-field">
+              <span class="field-label">Purchased Product / Item Name <span class="required-star">*</span></span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">🏷️</span>
+                <input type="text" id="conditionItemNameInput" placeholder="e.g. Jeans Pant" />
+              </div>
+            </label>
+
+            <label class="input-field">
+              <span class="field-label">Wheel Display Title <span class="required-star">*</span></span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">🎯</span>
+                <input type="text" id="conditionLabelInput" placeholder="e.g. Jeans Pant (Wheel 1)" />
+              </div>
+            </label>
+
+            <label class="input-field">
+              <span class="field-label">Emoji / Icon</span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">🎨</span>
+                <input type="text" id="conditionIconInput" placeholder="e.g. 👖" maxlength="4" />
+              </div>
+            </label>
+
+            <label class="input-field">
+              <span class="field-label">Min Purchase Amount (Optional)</span>
+              <div class="input-wrap">
+                <span class="input-prefix-icon">💵</span>
+                <input type="number" id="conditionMinAmountInput" placeholder="e.g. 50.00" min="0" step="0.01" />
+              </div>
+            </label>
+          </div>
+
+          <!-- Prizes for this condition -->
+          <div class="condition-prizes-wrap">
+            <div class="condition-prizes-header">
+              <div>
+                <h4>Gifts & Prizes for this Condition</h4>
+                <p class="muted" id="conditionProbSummary">Total Probability: 100%</p>
+              </div>
+              <button type="button" id="addPrizeBtn" class="btn btn-secondary btn-small">
+                <span>➕ Add Gift / Prize</span>
+              </button>
+            </div>
+
+            <div class="table-wrap">
+              <table id="prizeTable">
+                <thead>
+                  <tr>
+                    <th>Prize / Gift Name</th>
+                    <th>Probability %</th>
+                    <th class="centered">Enabled</th>
+                    <th class="centered">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="prizeTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="membership-manager" style="margin-top:24px;">
+        <div class="prize-manager-header">
+          <div>
+            <h3>Membership Types</h3>
+            <p class="muted">Create, rename or remove the membership tiers shown when registering members and in the member filters.</p>
+          </div>
+          <button type="button" id="addMembershipTypeBtn" class="btn btn-secondary btn-small">
+            <span>➕ Add Membership Type</span>
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table id="membershipTypeTable">
+            <thead>
+              <tr>
+                <th class="centered" style="width:80px;">Icon</th>
+                <th>Type Name</th>
+                <th class="centered" style="width:120px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="membershipTypeTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button id="saveSettingsBtn" class="btn btn-primary">
+          <span>💾 Save Settings</span>
+        </button>
+        <button id="resetDataBtn" class="btn btn-danger">
+          <span>⚠️ Reset All Local Data</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Prizes Records Tab -->
+    <section class="card records-card tab-panel hidden" data-tab-panel="prizes">
+      <div class="records-header">
+        <div class="records-title-wrap">
+          <span class="header-icon">🏆</span>
+          <div>
+            <h2>Issued Prize Records</h2>
+            <p class="muted">Browse and manage customer prize history with instant search and status tracking.</p>
+          </div>
+        </div>
+        <div class="records-header-actions" style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <button id="exportRecordsBtn" class="btn btn-secondary btn-small" title="Export Prize History to CSV">
+            <span>📥 Export CSV</span>
+          </button>
+          <button id="refreshRecordsBtn" class="btn btn-secondary btn-small">
+            <span>🔄 Sync From Google Sheets</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="records-controls">
+        <label class="input-field">
+          <span class="field-label">Search Record ID</span>
+          <div class="input-wrap">
+            <span class="input-prefix-icon">🔍</span>
+            <input type="text" id="recordSearchInput" placeholder="Type ID for instant search (e.g. DPM...)" />
+          </div>
+        </label>
+
+        <label class="input-field">
+          <span class="field-label">Filter & Sort By</span>
+          <div class="input-wrap">
+            <span class="input-prefix-icon">⚡</span>
+            <select id="recordFilterSortSelect">
+              <option value="recent_old">Recent -> Old</option>
+              <option value="old_recent">Old -> Recent</option>
+              <option value="big_small">High -> Low Purchase Amount</option>
+              <option value="small_big">Low -> High Purchase Amount</option>
+              <option value="completed">Completed Only</option>
+              <option value="pending">Pending Only</option>
+              <option value="rejected">Rejected Only</option>
+              <option value="expired">Expired Only</option>
+            </select>
+          </div>
+        </label>
+      </div>
+
+      <div id="bulkActionsBar" class="bulk-actions-bar hidden">
+        <div class="bulk-label-wrap">
+          <span class="field-label">Bulk Action:</span>
+          <select id="bulkActionSelect">
+            <option value="">Select action...</option>
+            <option value="completed">Mark Completed</option>
+            <option value="rejected">Mark Rejected</option>
+            <option value="expired">Mark Expired</option>
+            <option value="pending">Mark Pending</option>
+            <option value="delete">Delete Records</option>
+          </select>
+        </div>
+        <div class="bulk-btns">
+          <button id="applyBulkActionBtn" class="btn btn-secondary btn-small" disabled>Apply</button>
+          <button id="clearSelectionBtn" class="btn btn-ghost btn-small">Clear</button>
+        </div>
+      </div>
+
+      <div class="records-summary-card">
+        <p id="recordsSummary" class="records-summary">Loading records...</p>
+      </div>
+
+      <div class="records-table-wrap">
+        <table id="recordsTable">
+          <thead>
+            <tr>
+              <th class="centered select-col">
+                <input type="checkbox" id="selectAllRecords" aria-label="Select all visible records" />
+              </th>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Item</th>
+              <th>Bill</th>
+              <th>Prize</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Expiry</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recordsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination (dynamically rendered like Inventory) -->
+      <div id="recordsPaginationContainer"></div>
+    </section>
+
+    <!-- Members Club Tab -->
+    <section class="tab-panel" data-tab-panel="members">
+      <!-- Members Section Header Card -->
+      <div class="members-header-card">
+        <div class="members-header-content">
+          <div class="members-title-group">
+            <div class="members-badge-icon">👑</div>
+            <div>
+              <h2>Customer Members Club &amp; Credits</h2>
+              <p class="muted">Manage member loyalty, record purchase credits (100 Credits = ₹1.00), and redeem purchase discounts or cash rewards.</p>
+            </div>
+          </div>
+          <div class="rate-conversion-pill">
+            <span class="rate-pill-icon">⚖️</span>
+            <span class="rate-pill-text">Reward Rule: <strong>100 Credits = ₹1.00</strong></span>
+          </div>
+        </div>
+        <div class="members-header-actions">
+          <button type="button" id="openNewMemberModalBtn" class="btn btn-primary btn-glow">
+            <span class="btn-icon">➕</span>
+            <span>New Member</span>
+          </button>
+          <button type="button" id="openAddCreditModalBtn" class="btn btn-secondary">
+            <span class="btn-icon">💰</span>
+            <span>Record Purchase</span>
+          </button>
+          <button type="button" id="openDeductModalBtn" class="btn btn-danger-soft">
+            <span class="btn-icon">💸</span>
+            <span>Deduct / Redeem</span>
+          </button>
+          <button type="button" id="exportMembersBtn" class="btn btn-secondary" title="Export Members Club data to CSV">
+            <span class="btn-icon">📥</span>
+            <span>Export CSV</span>
+          </button>
+          <button type="button" id="pushMembersBtn" class="btn btn-success" title="Force Save all local members & credits to Google Sheets">
+            <span class="btn-icon">☁️</span>
+            <span>Save to Sheet</span>
+          </button>
+          <button type="button" id="refreshMembersBtn" class="btn btn-ghost" title="Sync Members from Google Sheets">
+            <span class="btn-icon">🔄</span>
+            <span>Sync Sheet</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Summary Cards -->
+      <div class="members-stats-grid">
+        <div class="member-stat-card">
+          <div class="stat-card-header">
+            <span class="stat-title">Total Members</span>
+            <span class="stat-icon">👥</span>
+          </div>
+          <div class="stat-val" id="statTotalMembers">0</div>
+          <div class="stat-subtext" id="statMembersSubtitle">0 Winners · 0 Direct</div>
+        </div>
+
+        <div class="member-stat-card highlight-gold">
+          <div class="stat-card-header">
+            <span class="stat-title">Active Credits Balance</span>
+            <span class="stat-icon">⭐</span>
+          </div>
+          <div class="stat-val" id="statTotalCredits">0</div>
+          <div class="stat-subtext" id="statCreditsWorth">Worth ≈ ₹0.00 cash</div>
+        </div>
+
+        <div class="member-stat-card">
+          <div class="stat-card-header">
+            <span class="stat-title">Total Credits Awarded</span>
+            <span class="stat-icon">📈</span>
+          </div>
+          <div class="stat-val" id="statTotalEarned">0</div>
+          <div class="stat-subtext" id="statEarnedWorth">Issued value ≈ ₹0.00</div>
+        </div>
+
+        <div class="member-stat-card">
+          <div class="stat-card-header">
+            <span class="stat-title">Cash Rewards Paid Out</span>
+            <span class="stat-icon">💵</span>
+          </div>
+          <div class="stat-val" id="statTotalCashPaid">₹0.00</div>
+          <div class="stat-subtext" id="statRedeemedCredits">0 credits redeemed</div>
+        </div>
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div class="members-toolbar">
+        <div class="members-search-wrap">
+          <span class="members-search-icon">🔍</span>
+          <input type="text" id="memberSearchInput" placeholder="Search member by customer name or phone number..." autocomplete="off" />
+          <button type="button" id="clearMemberSearchBtn" class="clear-search-btn hidden" title="Clear Search">✕</button>
+        </div>
+        <div class="members-filter-group">
+          <span class="filter-label">Filter:</span>
+          <select id="memberFilterSelect" class="member-filter-select" aria-label="Filter members">
+            <option value="all">All Members</option>
+            <option value="winner">Spin Winners Only</option>
+            <option value="direct">Direct Members Only</option>
+            <option value="has_balance">Has Balance (&gt; 0)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Members Bulk Actions Bar -->
+      <div id="memberBulkActionsBar" class="bulk-actions-bar hidden">
+        <div class="bulk-label-wrap">
+          <span class="field-label">Bulk Action:</span>
+          <select id="memberBulkActionSelect">
+            <option value="">Select action...</option>
+            <option value="sync">Sync to Google Sheets</option>
+            <option value="delete">Delete Members</option>
+          </select>
+        </div>
+        <div class="bulk-btns">
+          <button id="applyMemberBulkActionBtn" class="btn btn-secondary btn-small" disabled>Apply</button>
+          <button id="clearMemberSelectionBtn" class="btn btn-ghost btn-small">Clear</button>
+        </div>
+      </div>
+
+      <!-- Members Table Wrap -->
+      <div class="records-table-wrap members-table-wrap">
+        <table id="membersTable" class="members-table">
+          <thead>
+            <tr>
+              <th class="centered select-col">
+                <input type="checkbox" id="selectAllMembers" aria-label="Select all visible members" />
+              </th>
+              <th>Member</th>
+              <th>Phone</th>
+              <th>Type</th>
+              <th class="centered">Credits</th>
+              <th class="centered">Cash</th>
+              <th class="centered">Earned</th>
+              <th>Joined</th>
+              <th class="centered">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="membersTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination (dynamically rendered like Inventory) -->
+      <div id="membersPaginationContainer"></div>
+
+      <!-- Empty State -->
+      <div id="membersEmptyState" class="members-empty-state hidden">
+        <div class="empty-icon">👑</div>
+        <h3>No Members Found</h3>
+        <p class="muted" id="membersEmptyMsg">Add customers who win prizes or purchase membership to start tracking credits!</p>
+        <button type="button" id="emptyAddMemberBtn" class="btn btn-primary btn-small">
+          <span class="btn-icon">➕</span> Add First Member
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <template id="prizeRowTemplate">
+    <tr>
+      <td><input type="text" class="prize-name-input" placeholder="Prize Name" /></td>
+      <td><input type="number" class="prize-prob-input" min="0" step="0.001" placeholder="e.g. 10" /></td>
+      <td class="centered"><input type="checkbox" class="prize-enabled-input" checked /></td>
+      <td class="centered"><button class="btn btn-danger btn-small remove-prize-btn">Remove</button></td>
+    </tr>
+  </template>
+
+  <template id="membershipTypeRowTemplate">
+    <tr>
+      <td class="centered"><input type="text" class="mt-icon-input" placeholder="🏅" maxlength="4" style="width:56px;text-align:center;" /></td>
+      <td><input type="text" class="mt-name-input" placeholder="e.g. Gold Member" /></td>
+      <td class="centered"><button type="button" class="btn btn-danger btn-small remove-mt-btn">Remove</button></td>
+    </tr>
+  </template>
+
+  <!-- Winner Celebration Modal -->
+  <div id="winnerModal" class="modal winner-modal hidden" aria-hidden="true" role="dialog" aria-labelledby="winnerPrizeName">
+    <div class="modal-backdrop" data-close-winner-modal="true"></div>
+    <div class="modal-panel winner-panel">
+      <button type="button" class="modal-close-x" data-close-winner-modal="true" aria-label="Close">✕</button>
+      <div class="winner-trophy-wrap">
+        <span class="winner-trophy-icon">🏆</span>
+        <div class="winner-sparkle-ring"></div>
+      </div>
+      <span class="winner-kicker">🎉 CONGRATULATIONS! 🎉</span>
+      <h2 class="winner-prize-name" id="winnerPrizeName">-</h2>
+      <p class="winner-customer-msg" id="winnerCustomerMsg">Lucky customer reward</p>
+      
+      <div class="winner-item-pill" id="winnerItemPill">
+        <span class="winner-item-icon">🛍️</span>
+        <span id="winnerItemText">Purchased: Jeans Pant</span>
+      </div>
+
+      <div class="winner-id-badge">
+        <span class="winner-id-label">VOUCHER RECORD ID:</span>
+        <strong id="winnerRecordId" class="winner-id-val">-</strong>
+      </div>
+
+      <div class="winner-modal-actions">
+        <button type="button" id="winnerAddMemberBtn" class="btn btn-secondary">
+          <span class="btn-icon">👑</span>
+          <span>Add to Members Club</span>
+        </button>
+        <button type="button" id="winnerViewCouponBtn" class="btn btn-primary btn-glow">
+          <span class="btn-icon">🎟️</span>
+          <span>View Voucher Coupon</span>
+        </button>
+        <button type="button" id="winnerSpinAgainBtn" class="btn btn-ghost">
+          <span class="btn-icon">🔄</span>
+          <span>Spin Again</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Record Modal -->
+  <div id="editModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="true"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3>Edit Prize Record</h3>
+        <button type="button" class="modal-close-x" data-close-modal="true" aria-label="Close">✕</button>
+      </div>
+      <form id="editRecordForm" class="modal-form">
+        <input type="hidden" id="editRecordId" />
+        <label class="input-field">
+          <span class="field-label">Customer Name</span>
+          <input type="text" id="editCustomerName" required />
+        </label>
+        <label class="input-field">
+          <span class="field-label">Customer Number</span>
+          <input type="tel" id="editCustomerNumber" />
+        </label>
+        <label class="input-field">
+          <span class="field-label">Purchase Amount</span>
+          <input type="number" id="editPurchaseAmount" min="0" step="0.01" required />
+        </label>
+        <label class="input-field">
+          <span class="field-label">Prize Won</span>
+          <input type="text" id="editPrizeWon" required />
+        </label>
+        <label class="input-field">
+          <span class="field-label">Expiry Date & Time</span>
+          <input type="datetime-local" id="editExpiryDate" required />
+        </label>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" id="cancelEditBtn" class="btn btn-ghost">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Gift Card Coupon Modal -->
+  <div id="couponViewModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-coupon-modal="true"></div>
+    <div class="modal-panel coupon-view-panel">
+      <div class="modal-header">
+        <div>
+          <h3>🎟️ Gift Card Voucher</h3>
+          <p class="muted">Review the award gift card and share it with the customer.</p>
+        </div>
+        <button type="button" class="modal-close-x" data-close-coupon-modal="true" aria-label="Close">✕</button>
+      </div>
+
+      <div class="coupon-view-canvas-wrap">
+        <canvas id="couponViewCanvas" width="960" height="700" aria-label="Gift card voucher image"></canvas>
+      </div>
+
+      <div class="coupon-view-meta">
+        <div class="meta-item">
+          <span class="meta-label">Record ID</span>
+          <span id="couponViewRecordId" class="meta-val mono">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Customer</span>
+          <span id="couponViewCustomer" class="meta-val">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Prize Won</span>
+          <span id="couponViewPrize" class="meta-val">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Status</span>
+          <span id="couponViewStatus" class="meta-val">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Valid Until</span>
+          <span id="couponViewExpiry" class="meta-val">-</span>
+        </div>
+      </div>
+
+      <div class="modal-actions coupon-view-actions">
+        <button type="button" id="downloadCouponBtn" class="btn btn-secondary">
+          <span class="btn-icon">📥</span> Download Gift Card
+        </button>
+        <button type="button" id="shareCouponWaBtn" class="btn btn-whatsapp">
+          <span class="btn-icon">💬</span> Share via WhatsApp
+        </button>
+        <button type="button" class="btn btn-ghost" data-close-coupon-modal="true">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Member Modal -->
+  <div id="memberModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-member-modal="true"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3 id="memberModalTitle">Add New Member</h3>
+        <button type="button" class="modal-close-x" data-close-member-modal="true" aria-label="Close">✕</button>
+      </div>
+      <form id="memberForm" class="modal-form">
+        <input type="hidden" id="memberFormId" />
+        <label class="input-field">
+          <span class="field-label">Customer Name <span class="required-star">*</span></span>
+          <input type="text" id="memberFormName" placeholder="e.g. Rahul Sharma" required />
+        </label>
+        <label class="input-field">
+          <span class="field-label">WhatsApp / Phone Number <span class="required-star">*</span></span>
+          <input type="tel" id="memberFormPhone" placeholder="e.g. +91 98765 43210" required />
+        </label>
+        <label class="input-field">
+          <span class="field-label">Membership Type</span>
+          <select id="memberFormType">
+            <option value="Spin Winner">👑 Spin Winner</option>
+            <option value="Direct Member" selected>💎 Direct Member</option>
+            <option value="VIP Member">⭐ VIP Member</option>
+          </select>
+        </label>
+        <div id="memberInitialCreditsGroup">
+          <label class="input-field">
+            <span class="field-label">Initial Welcome Credits (Optional)</span>
+            <input type="number" id="memberFormInitialCredits" min="0" step="1" placeholder="e.g. 100" />
+          </label>
+          <div class="calc-hint-text" id="initialCreditsHint">100 Credits = ₹1.00 cash value</div>
+        </div>
+        <label class="input-field">
+          <span class="field-label">Notes / Reference (Optional)</span>
+          <input type="text" id="memberFormNotes" placeholder="e.g. Regular Jeans buyer" />
+        </label>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary" id="saveMemberBtn">Save Member</button>
+          <button type="button" class="btn btn-ghost" data-close-member-modal="true">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Purchase Credit Modal -->
+  <div id="creditModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-credit-modal="true"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3>Record Purchase &amp; Award Credits</h3>
+        <button type="button" class="modal-close-x" data-close-credit-modal="true" aria-label="Close">✕</button>
+      </div>
+      <form id="creditForm" class="modal-form">
+        <label class="input-field">
+          <div class="field-label-row">
+            <span class="field-label">Select Member <span class="required-star">*</span></span>
+            <button type="button" id="creditQuickAddMemberBtn" class="link-btn-text">+ Register New</button>
+          </div>
+          <select id="creditMemberSelect" required>
+            <!-- Dynamically populated options -->
+          </select>
+        </label>
+        <div id="creditCurrentBalanceRow" class="member-current-info-pill">
+          <span>Current Balance:</span>
+          <strong id="creditCurrentBalanceText">0 Credits (₹0.00)</strong>
+        </div>
+        <label class="input-field">
+          <span class="field-label">Purchase Bill Amount (₹)</span>
+          <input type="number" id="creditPurchaseAmount" min="0" step="0.01" placeholder="e.g. 1500.00" />
+        </label>
+        <label class="input-field">
+          <span class="field-label">Credits to Award <span class="required-star">*</span></span>
+          <input type="number" id="creditAmountInput" min="1" step="1" placeholder="e.g. 100" required />
+        </label>
+        <div class="calc-preview-card">
+          <span class="calc-icon">💡</span>
+          <span class="calc-text">Reward Value: <strong id="creditCashWorthPreview">₹1.00</strong> (at 100 credits = ₹1.00)</span>
+        </div>
+        <label class="input-field">
+          <span class="field-label">Bill / Item Note (Optional)</span>
+          <input type="text" id="creditNoteInput" placeholder="e.g. Bill #1204 - Denim Jeans" />
+        </label>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Add Credits</button>
+          <button type="button" class="btn btn-ghost" data-close-credit-modal="true">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Deduct Credits / Redeem Reward Modal -->
+  <div id="deductModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-deduct-modal="true"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3>💸 Deduct Credits / Redeem Reward</h3>
+        <button type="button" class="modal-close-x" data-close-deduct-modal="true" aria-label="Close">✕</button>
+      </div>
+      <form id="deductForm" class="modal-form">
+        <label class="input-field">
+          <span class="field-label">Select Member <span class="required-star">*</span></span>
+          <select id="deductMemberSelect" required>
+            <!-- Dynamically populated options -->
+          </select>
+        </label>
+        <div class="member-current-info-pill highlight-gold">
+          <span>Available to Redeem:</span>
+          <strong id="deductAvailableText">0 Credits (Max Value: ₹0.00)</strong>
+        </div>
+
+        <div class="redemption-mode-selector">
+          <span class="field-label">Redemption Type:</span>
+          <div class="redemption-mode-pills">
+            <button type="button" id="modePurchaseDiscountBtn" class="mode-pill is-active">🛍️ Purchase Item Discount</button>
+            <button type="button" id="modeCashPayoutBtn" class="mode-pill">💵 Cash Payout</button>
+          </div>
+          <input type="hidden" id="deductRedeemMode" value="purchase_discount" />
+        </div>
+
+        <!-- Purchase Discount Fields -->
+        <div id="purchaseDiscountFields" class="discount-fields-wrap">
+          <label class="input-field">
+            <span class="field-label">Purchase Bill Amount (₹)</span>
+            <input type="number" id="deductBillAmountInput" min="0" step="0.01" placeholder="e.g. 500.00" />
+          </label>
+        </div>
+
+        <div class="two-way-calc-grid">
+          <label class="input-field">
+            <span class="field-label">Credits to Deduct <span class="required-star">*</span></span>
+            <input type="number" id="deductCreditsInput" min="1" step="1" placeholder="e.g. 100" required />
+          </label>
+          <div class="calc-equal-sign">=</div>
+          <label class="input-field">
+            <span class="field-label" id="deductValueLabel">Discount Amount (₹)</span>
+            <input type="number" id="deductCashInput" min="0.01" step="0.01" placeholder="e.g. 1.00" />
+          </label>
+        </div>
+
+        <!-- Purchase Bill Net Payable Banner -->
+        <div id="discountNetBanner" class="payout-banner discount-banner">
+          <span class="payout-icon">🏷️</span>
+          <div>
+            <div class="payout-title">Customer Net Bill to Pay:</div>
+            <div class="payout-amount" id="deductNetPayableDisplay">₹0.00</div>
+            <div class="payout-breakdown" id="deductBreakdownDisplay">Bill: ₹0.00 - Discount: ₹0.00</div>
+          </div>
+        </div>
+
+        <!-- Cash Payout Banner -->
+        <div id="cashPayoutBanner" class="payout-banner hidden">
+          <span class="payout-icon">💵</span>
+          <div>
+            <div class="payout-title">Cash to Hand Customer:</div>
+            <div class="payout-amount" id="deductPayoutDisplay">₹0.00</div>
+          </div>
+        </div>
+
+        <label class="input-field">
+          <span class="field-label">Reason / Remark</span>
+          <input type="text" id="deductNoteInput" placeholder="e.g. Discount on Jeans Pant purchase" />
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" id="deductSendWhatsAppCheck" checked />
+          <span>Send redemption confirmation receipt via WhatsApp</span>
+        </label>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-danger" id="confirmDeductBtn">Confirm Purchase Discount</button>
+          <button type="button" class="btn btn-ghost" data-close-deduct-modal="true">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Member Transaction History Modal -->
+  <div id="memberHistoryModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-history-modal="true"></div>
+    <div class="modal-panel modal-panel-wide">
+      <div class="modal-header">
+        <div>
+          <h3 id="historyMemberName">Member Transaction Ledger</h3>
+          <p class="muted" id="historyMemberSub">Phone: - · Balance: -</p>
+        </div>
+        <button type="button" class="modal-close-x" data-close-history-modal="true" aria-label="Close">✕</button>
+      </div>
+      <div class="history-summary-cards">
+        <div class="history-mini-card">
+          <span class="mini-label">Current Balance</span>
+          <strong class="mini-val text-gold" id="historyCurrentCredits">0 pts</strong>
+        </div>
+        <div class="history-mini-card">
+          <span class="mini-label">Cash Value</span>
+          <strong class="mini-val" id="historyCurrentCash">₹0.00</strong>
+        </div>
+        <div class="history-mini-card">
+          <span class="mini-label">Total Earned</span>
+          <strong class="mini-val text-emerald" id="historyLifetimeEarned">+0 pts</strong>
+        </div>
+        <div class="history-mini-card">
+          <span class="mini-label">Total Cashed Out</span>
+          <strong class="mini-val text-crimson" id="historyLifetimeCashed">-₹0.00</strong>
+        </div>
+      </div>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Date &amp; Time</th>
+              <th>Type</th>
+              <th>Credits</th>
+              <th>Cash Value</th>
+              <th>Note / Description</th>
+              <th>Balance After</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="historyShareCardWaBtn" class="btn btn-whatsapp">
+          <i class="fab fa-whatsapp"></i> Share Card to WhatsApp
+        </button>
+        <button type="button" class="btn btn-ghost" data-close-history-modal="true">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Loyalty Card Modal (Preview & WhatsApp Share) -->
+  <div id="memberCardModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-member-card-modal="true"></div>
+    <div class="modal-panel coupon-view-panel member-card-modal-panel">
+      <div class="modal-header">
+        <div>
+          <h3>👑 Member Loyalty Card</h3>
+          <p class="muted">Review the customer's digital membership card with current balance and share it via WhatsApp.</p>
+        </div>
+        <button type="button" class="modal-close-x" data-close-member-card-modal="true" aria-label="Close">✕</button>
+      </div>
+
+      <div class="coupon-view-canvas-wrap member-card-canvas-wrap">
+        <canvas id="memberCardCanvas" width="960" height="540" aria-label="Member loyalty card image"></canvas>
+      </div>
+
+      <div class="coupon-view-meta member-card-meta">
+        <div class="meta-item">
+          <span class="meta-label">Member</span>
+          <span id="memberCardName" class="meta-val">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Phone</span>
+          <span id="memberCardPhone" class="meta-val mono">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Membership Type</span>
+          <span id="memberCardType" class="meta-val">-</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Current Balance</span>
+          <span id="memberCardCredits" class="meta-val text-gold">0 pts</span>
+        </div>
+      </div>
+
+      <div class="modal-actions coupon-view-actions">
+        <button type="button" id="downloadMemberCardBtn" class="btn btn-secondary">
+          <span class="btn-icon">📥</span> Download Card
+        </button>
+        <button type="button" id="shareMemberCardWaBtn" class="btn btn-whatsapp">
+          <span class="btn-icon">💬</span> Share via WhatsApp
+        </button>
+        <button type="button" class="btn btn-ghost" data-close-member-card-modal="true">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Record Direct Credit Action Modal -->
+  <div id="recordCreditModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="recordCreditModalTitle">
+    <div class="modal-backdrop" data-close-record-credit="true"></div>
+    <div class="modal-panel modal-panel-compact record-credit-panel">
+      <div class="modal-header">
+        <div>
+          <h3 id="recordCreditModalTitle">⭐ Customer Loyalty Credits</h3>
+          <p class="muted" id="recordCreditModalSubtitle">Manage credits directly from Prize Record</p>
+        </div>
+        <button type="button" class="modal-close-x" data-close-record-credit="true" aria-label="Close">✕</button>
+      </div>
+
+      <div class="record-credit-body">
+        <!-- Customer & Member Status Info -->
+        <div class="record-credit-member-card" id="recordCreditMemberCard">
+          <div class="record-credit-member-header">
+            <div class="record-credit-avatar">👤</div>
+            <div class="record-credit-user-info">
+              <h4 id="recordCreditCustName">Customer Name</h4>
+              <p class="muted" id="recordCreditCustPhone">+91 00000 00000</p>
+            </div>
+            <span id="recordCreditMemberStatusPill" class="status-pill status-member">👑 Active Member</span>
+          </div>
+
+          <div class="record-credit-balance-row" id="recordCreditBalanceRow">
+            <div class="record-credit-kpi">
+              <span class="kpi-label">Current Balance</span>
+              <strong class="kpi-val text-gold" id="recordCreditCurrentBal">0 Credits</strong>
+            </div>
+            <div class="record-credit-kpi">
+              <span class="kpi-label">Cash Worth</span>
+              <strong class="kpi-val text-emerald" id="recordCreditCashWorth">₹0.00</strong>
+            </div>
+          </div>
+
+          <div id="recordCreditNotMemberNotice" class="record-credit-notice hidden">
+            <span>✨ <strong>Not in Members Club yet:</strong> Clicking an action below will automatically register this customer with their details from this record!</span>
+          </div>
+        </div>
+
+        <!-- Prize Record Reference Details -->
+        <div class="record-credit-ref-box">
+          <div class="ref-row">
+            <span class="ref-label">Record ID:</span>
+            <strong id="recordCreditRecId" class="ref-val mono">#DPM...</strong>
+          </div>
+          <div class="ref-row">
+            <span class="ref-label">Purchased:</span>
+            <span id="recordCreditRecItem" class="ref-val">Jeans Pant</span>
+          </div>
+          <div class="ref-row">
+            <span class="ref-label">Purchase Bill:</span>
+            <strong id="recordCreditRecAmount" class="ref-val text-gold">₹0.00</strong>
+          </div>
+          <div class="ref-row">
+            <span class="ref-label">Prize Won:</span>
+            <span id="recordCreditRecPrize" class="ref-val">Free Cap</span>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="record-credit-actions-grid">
+          <button type="button" id="recordCreditAddBtn" class="btn btn-credit-action-add">
+            <span class="btn-action-icon">➕</span>
+            <div class="btn-action-text">
+              <strong id="recordCreditAddTitle">Add Purchase Credits</strong>
+              <span id="recordCreditAddSub" class="btn-subtext">Award points for this bill</span>
+            </div>
+          </button>
+
+          <button type="button" id="recordCreditDeductBtn" class="btn btn-credit-action-deduct">
+            <span class="btn-action-icon">➖</span>
+            <div class="btn-action-text">
+              <strong id="recordCreditDeductTitle">Reduce / Redeem Credits</strong>
+              <span id="recordCreditDeductSub" class="btn-subtext">Apply bill discount or cash payout</span>
+            </div>
+          </button>
+        </div>
+        <div class="record-credit-footer-actions">
+          <button type="button" id="recordCreditViewMemberBtn" class="btn btn-ghost btn-small">
+            <span>👑 View in Members Club</span>
+          </button>
+          <button type="button" class="btn btn-ghost btn-small" data-close-record-credit="true">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div id="spinFullscreen" class="spin-fullscreen hidden" role="dialog" aria-modal="true" aria-label="Fullscreen wheel">
+    <div class="spin-fullscreen-topbar">
+      <div class="spin-fullscreen-title">
+        <span class="win-pill-icon">🎰</span>
+        <span>Spin & Win Wheel</span>
+      </div>
+      <button type="button" id="spinFullscreenClose" class="btn btn-ghost spin-fullscreen-close">
+        ✕ Close
+      </button>
+    </div>
+    <div class="spin-fullscreen-stage">
+      <div class="wheel-wrap spin-fs-wrap" id="spinFullscreenWrap">
+        <div class="wheel-rim-glow"></div>
+        <div class="wheel-pointer" id="spinFullscreenPointer" aria-hidden="true">
+          <div class="pointer-needle"></div>
+          <div class="pointer-center-pin"></div>
+        </div>
+        <canvas id="spinFullscreenCanvas" aria-label="Fullscreen reward wheel"></canvas>
+      </div>
+      <div class="wheel-tip-row">
+        <span class="wheel-tip-icon">👆</span>
+        <span id="spinFullscreenHint" class="wheel-hint">Tap the wheel to spin</span>
+      </div>
+    </div>
+  </div>
+
+        </div>
+    </main>
+
+    <!-- Core Admin Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu-manager.js"></script>
+    <script src="js/main.js?v=2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="js/spin.js?v=2.5"></script>
+</body>
+</html>

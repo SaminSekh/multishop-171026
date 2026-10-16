@@ -1,0 +1,20 @@
+{
+    "rewrites": [
+        {
+            "source": "/x",
+            "destination": "/shop/index.html"
+        },
+        {
+            "source": "/shop",
+            "destination": "/shop/index.html"
+        },
+        {
+            "source": "/shop/:slug",
+            "destination": "/shop/index.html?u=:slug"
+        },
+        {
+            "source": "/:slug",
+            "destination": "/shop/index.html?u=:slug"
+        }
+    ]
+}
