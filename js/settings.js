@@ -1859,25 +1859,8 @@ class SettingsManager {
     }
 
     showBusinessTypeInfo() {
-        const select = document.getElementById('businessType');
-        if (!select) return;
-
-        // Add info text below the business type select
         const existingInfo = document.getElementById('businessTypeInfo');
         if (existingInfo) existingInfo.remove();
-
-        const currentType = select.value || 'general';
-        const infoDiv = document.createElement('div');
-        infoDiv.id = 'businessTypeInfo';
-        infoDiv.style.cssText = 'margin-top: 8px; padding: 10px 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; font-size: 0.82rem; color: #0369a1;';
-
-        if (currentType === 'general') {
-            infoDiv.innerHTML = '<i class="fas fa-info-circle"></i> <strong>General Store</strong> — All product categories and types are available. Contact your system administrator to set a specific shop type.';
-        } else {
-            infoDiv.innerHTML = `<i class="fas fa-store"></i> <strong>Shop Type: ${currentType}</strong> — Product categories and types are filtered to show only "${currentType}" related options. This is set by your system administrator.`;
-        }
-
-        select.parentNode.appendChild(infoDiv);
     }
 }
 

@@ -1788,7 +1788,7 @@ class InventoryManager {
                     const isSizeField = ['size', 'storage', 'portion', 'weight', 'pack'].some(k => field.label.toLowerCase().includes(k));
                     dynamicFieldsHtml += `<div class="variant-field-wrapper">
                         <label class="variant-field-label">${field.label}</label>
-                        <input type="text" class="variant-attr variant-tag-input" data-field-id="${fieldId}" value="${existingVal}" list="${datalistId}" placeholder="Enter ${field.label} (comma separated)" required>
+                        <input type="text" class="variant-attr variant-tag-input" data-field-id="${fieldId}" value="${existingVal}" list="${datalistId}" placeholder="Enter ${field.label}" required>
                         <datalist id="${datalistId}">`;
                     tagOptions.forEach(opt => {
                         dynamicFieldsHtml += `<option value="${opt}"></option>`;
@@ -2135,12 +2135,11 @@ class InventoryManager {
                             <i class="${d.icon}" style="color:${d.color};"></i> ${d.label}:
                         </label>
                         <div style="display:flex;gap:8px;margin-bottom:6px;">
-                            <input type="text" id="attrInput_${d.key}" placeholder="Add ${d.label.toLowerCase()} and press Enter" style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
+                            <input type="text" id="attrInput_${d.key}" placeholder="Add ${d.label.toLowerCase()}" style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.85rem;outline:none;background:white;">
                             <button type="button" class="btn btn-sm btn-primary" onclick="window.inventoryManager.addAttributeTagFromInput('${d.key}')" style="padding:8px 14px;font-size:0.8rem;">Add</button>
                         </div>
                         ${d.presets && d.presets.length > 0 ? `
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
-                            <span style="font-size:0.75rem;color:#64748b;align-self:center;">Quick Add:</span>
                             ${d.presets.map(p => `
                                 <button type="button" class="preset-chip" onclick="window.inventoryManager.addAttributeTag('${d.key}', '${p}')" style="padding:3px 8px;border:1px solid #cbd5e1;background:white;color:#334155;border-radius:12px;font-size:0.75rem;cursor:pointer;">${p}</button>
                             `).join('')}
@@ -2417,7 +2416,7 @@ class InventoryManager {
         }
 
         if (tagAttrs.length === 0) {
-            preview.innerHTML = '<span style="font-size:0.78rem;color:#94a3b8;font-style:italic;">No attributes set above. Add attributes first, then generate variants.</span>';
+            preview.innerHTML = '';
             return;
         }
 
@@ -2469,7 +2468,7 @@ class InventoryManager {
                     const isSizeField = ['size', 'storage', 'portion', 'weight', 'pack'].some(k => field.label.toLowerCase().includes(k));
                     dynamicFieldsHtml += `<div class="variant-field-wrapper">
                         <label class="variant-field-label">${field.label}</label>
-                        <input type="text" class="variant-attr variant-tag-input" data-field-id="${fieldId}" value="${existingVal}" list="${datalistId}" placeholder="Enter ${field.label} (comma separated)" required>
+                        <input type="text" class="variant-attr variant-tag-input" data-field-id="${fieldId}" value="${existingVal}" list="${datalistId}" placeholder="Enter ${field.label}" required>
                         <datalist id="${datalistId}">`;
                     tagOptions.forEach(opt => {
                         dynamicFieldsHtml += `<option value="${opt}"></option>`;
@@ -5037,11 +5036,11 @@ class InventoryManager {
                         e.preventDefault();
                         this.applyAllSizeColor();
                     });
-                    const hint = document.createElement('span');
-                    hint.style.cssText = 'font-size:0.73rem;color:#94a3b8;';
-                    hint.textContent = 'fills Size & Color with "All" (qty auto-fills with Stock Quantity)';
+                    const allStatus = document.createElement('span');
+                    allStatus.id = 'allSizeColorStatus';
+                    allStatus.style.cssText = 'display:none;font-size:0.73rem;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:2px 10px;';
                     allBar.appendChild(allBtn);
-                    allBar.appendChild(hint);
+                    allBar.appendChild(allStatus);
                     tagSection.appendChild(allBar);
                 }
 
@@ -5087,14 +5086,12 @@ class InventoryManager {
                     tagBlock.innerHTML = `
                         <label style="font-weight:600;font-size:0.82rem;color:#475569;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                             <i class="${iconClass}" style="color:var(--primary);"></i> ${field.label}
-                            <span style="font-size:0.72rem;color:#94a3b8;font-weight:400;">— comma separated, customers can choose (stock & optional price)</span>
                         </label>
                         <input type="text" id="dynTagInput_${fieldKey}" value="${initialCsv}"
-                            placeholder="Enter ${field.label} (comma separated)"
+                            placeholder="Enter ${field.label}"
                             style="width:100%;padding:7px 11px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.85rem;outline:none;background:white;margin-bottom:6px;">
                         ${field.presets && field.presets.length > 0 ? `
                         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;">
-                            <span style="font-size:0.72rem;color:#94a3b8;align-self:center;">Quick:</span>
                             ${field.presets.map(p => `<button type="button" onclick="window.inventoryManager.addDynTag('${fieldKey}', '${p}')" style="padding:2px 9px;border:1px solid #cbd5e1;background:white;color:#475569;border-radius:10px;font-size:0.75rem;cursor:pointer;">${p}</button>`).join('')}
                         </div>` : ''}
                         <div id="dynTagChips_${fieldKey}" style="display:flex;flex-wrap:wrap;gap:5px;min-height:18px;"></div>
@@ -5221,22 +5218,42 @@ class InventoryManager {
     applyAllSizeColor() {
         if (!this.dynTagFields) this.dynTagFields = {};
         let filledAny = false;
-        Object.keys(this.dynTagFields).forEach(key => {
+
+        // Collect size/color keys from state AND from the rendered inputs
+        const keys = new Set(Object.keys(this.dynTagFields));
+        document.querySelectorAll('input[id^="dynTagInput_"]').forEach(inp => {
+            keys.add(inp.id.replace('dynTagInput_', ''));
+        });
+
+        keys.forEach(key => {
             const k = (key || '').toLowerCase();
             if (k.includes('size') || k.includes('color') || k.includes('colour') || k.includes('shade')) {
                 const set = this.dynTagFields[key];
                 const existing = set instanceof Set ? Array.from(set) : (Array.isArray(set) ? set : []);
-                const hasAll = existing.some(v => (v || '').toLowerCase() === 'all');
+                const inp = document.getElementById(`dynTagInput_${key}`);
+                const fromInput = inp ? inp.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+                const current = existing.length > 0 ? existing : fromInput;
+                const hasAll = current.some(v => (v || '').toLowerCase() === 'all');
                 if (!hasAll) {
-                    const inp = document.getElementById(`dynTagInput_${key}`);
-                    const next = existing.concat('All');
+                    const next = current.concat('All');
                     if (inp) inp.value = next.join(', ');
                     this.syncDynTagInput(key, next.join(', '));
                     filledAny = true;
                 }
             }
         });
-        if (!filledAny) showNotification('Size & Color already set to "All"', 'info');
+
+        if (filledAny) {
+            const allStatus = document.getElementById('allSizeColorStatus');
+            if (allStatus) allStatus.style.display = 'none';
+        } else {
+            const allStatus = document.getElementById('allSizeColorStatus');
+            if (allStatus) {
+                allStatus.textContent = 'Size & Color already set to "All"';
+                allStatus.style.display = 'inline-block';
+            }
+            showNotification('Size & Color already set to "All"', 'info');
+        }
     }
 
     // Remove a tag from a multi-value dynamic field

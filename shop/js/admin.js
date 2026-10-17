@@ -2819,11 +2819,11 @@
             '<button class="icon-mini danger v-remove" type="button" aria-label="Remove color">' + icon('ai-trash') + '</button>' +
             '<div class="v-image-wrap">' +
             '<img class="v-preview" alt="" loading="lazy">' +
-            '<input class="input v-image" type="text" placeholder="Variant image URL (optional) — shown when this colour is picked" value="' + esc(color[2] || '') + '">' +
+            '<input class="input v-image" type="text" placeholder="Variant image URL (optional)" value="' + esc(color[2] || '') + '">' +
             '<button class="icon-mini v-upload" type="button" aria-label="Upload variant image">' + icon('ai-upload') + '</button>' +
             '<input type="file" accept="image/*" hidden>' +
             '</div>' +
-            '<input class="input v-sizes" type="text" placeholder="Sizes for this colour, comma separated (e.g. S, M, L) — leave blank to use the product sizes" value="' + esc(Array.isArray(color[3]) ? color[3].join(', ') : (color[3] || '')) + '">' +
+            '<input class="input v-sizes" type="text" placeholder="Sizes (e.g. S, M, L)" value="' + esc(Array.isArray(color[3]) ? color[3].join(', ') : (color[3] || '')) + '">' +
             '<div class="v-qty-wrap"></div>';
 
         var sizeStock = color[5] || null;

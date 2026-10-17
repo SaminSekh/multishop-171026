@@ -470,9 +470,9 @@ body {
 /* =========================================================
    Icon-only circular action buttons + hover tooltips
    ========================================================= */
-.btn-action:has(i),
-.btn-action:has([class*=" fa-"]),
-.btn-action:has(.icon) {
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):not(.modal-header *):has(i),
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):not(.modal-header *):has([class*=" fa-"]),
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):not(.modal-header *):has(.icon) {
     width: 38px !important;
     height: 38px !important;
     min-width: 38px !important;
@@ -488,13 +488,100 @@ body {
     white-space: nowrap !important;
 }
 
-.btn-action:has(i) i,
-.btn-action:has(i) [class*=" fa-"],
-.btn-action:has(i) [class^="fa-"],
-.btn-action:has(i) svg {
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):not(.modal-header *):has(i) i,
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):not(.modal-header *):has(i) [class*=" fa-"],
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):has(i) [class^="fa-"],
+.btn-action:not(.quick-actions *):not(.quick-actions):not(.table-actions *):not(.table-actions):not(.navbar *):not(.navbar):not(.navbar-right *):not(.modal-footer *):not(.modal-footer):not(.footer-actions *):has(i) svg {
     font-size: 0.95rem !important;
     line-height: 1 !important;
     margin: 0 !important;
+}
+
+/* Modal action buttons should always retain normal text and flexible layout */
+.modal-footer .btn,
+.modal-footer .btn-action,
+.footer-actions .btn,
+.footer-actions .btn-action {
+    width: auto;
+    height: auto;
+    min-height: 40px;
+    max-height: none !important;
+    min-width: auto;
+    max-width: none !important;
+    padding: 10px 20px !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    letter-spacing: normal !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+    text-indent: 0 !important;
+}
+
+.modal-footer .btn i,
+.modal-footer .btn-action i,
+.footer-actions .btn i,
+.footer-actions .btn-action i {
+    font-size: 0.92rem !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+}
+
+/* Navbar action buttons should always retain normal text and flexible layout */
+.navbar .btn,
+.navbar .btn-action,
+.navbar-right .btn,
+.navbar-right .btn-action {
+    width: auto;
+    height: auto;
+    min-height: 34px;
+    max-height: none !important;
+    min-width: auto;
+    max-width: none !important;
+    padding: 6px 12px;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    line-height: normal !important;
+    letter-spacing: normal !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+    text-indent: 0 !important;
+}
+
+.navbar .btn i,
+.navbar .btn-action i,
+.navbar-right .btn i,
+.navbar-right .btn-action i {
+    font-size: 0.85rem !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+}
+
+/* Icon-only circular buttons inside navbar (when explicitly marked with .btn-action-icon) */
+.navbar .btn-action-icon,
+.navbar-right .btn-action-icon {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
 }
 
 /* Mouse-follow tooltip (positioned by JS in main.js, below the cursor) */
@@ -516,19 +603,90 @@ body {
 }
 
 /* Keep labeled tiles & the POS checkout CTA as text buttons */
+.quick-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin-bottom: 24px !important;
+    padding: 2px 2px 6px 2px !important;
+    scrollbar-width: none !important;
+}
+
+.quick-actions::-webkit-scrollbar {
+    display: none !important;
+}
+
+.quick-actions .btn,
 .quick-actions .btn-action {
+    flex: 1 1 0 !important;
     width: auto !important;
-    height: auto !important;
-    min-width: 100px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    min-width: max-content !important;
     max-width: none !important;
-    padding: 10px 20px !important;
-    font-size: 0.95rem !important;
+    padding: 0 16px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
     line-height: normal !important;
-    border-radius: var(--border-radius) !important;
-    gap: 6px !important;
+    border-radius: 10px !important;
+    gap: 7px !important;
     position: static !important;
     overflow: visible !important;
-    white-space: normal !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.2s ease !important;
+}
+
+.quick-actions .btn:hover,
+.quick-actions .btn-action:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.quick-actions .btn i,
+.quick-actions .btn-action i {
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+}
+
+.table-actions .btn,
+.table-actions .btn-action {
+    width: auto !important;
+    height: auto !important;
+    min-height: 32px !important;
+    max-height: 36px !important;
+    min-width: auto !important;
+    max-width: none !important;
+    padding: 0 12px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-indent: 0 !important;
+}
+
+.table-actions .btn i,
+.table-actions .btn-action i {
+    font-size: 0.85rem !important;
+    margin: 0 !important;
+    display: inline-block !important;
 }
 
 #checkoutBtn.btn-action {
@@ -563,13 +721,38 @@ body {
     }
 
     .quick-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 2px 2px 6px 2px !important;
+        scrollbar-width: none !important;
+        margin-bottom: 20px !important;
     }
 
-    .quick-actions .btn {
-        width: 100%;
+    .quick-actions::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .quick-actions .btn,
+    .quick-actions .btn-action {
+        flex: 1 0 auto !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: max-content !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+        padding: 0 14px !important;
+        font-size: 0.84rem !important;
+        white-space: nowrap !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
     }
 }
 
@@ -670,17 +853,20 @@ body {
     padding: 20px 0;
     position: fixed;
     height: 100vh;
-    overflow-y: auto;
+    overflow: hidden;
     overscroll-behavior: contain;
     transition: var(--transition);
     z-index: 900;
     /* Lowered from 9999 to be behind modals (1001) */
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-header {
     padding: 0 20px 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .sidebar-header h2 {
@@ -707,6 +893,32 @@ body {
 
 .nav-links {
     list-style: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    padding-bottom: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.nav-links::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav-links::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-links::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+}
+
+.nav-links::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .nav-links li {
@@ -1667,11 +1879,18 @@ textarea {
     }
 
     .quick-actions {
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 8px !important;
     }
 
     .quick-actions .btn {
-        width: 100%;
+        width: auto !important;
+        flex: 1 0 auto !important;
+        min-width: max-content !important;
     }
 
     .filter-options {
@@ -1716,10 +1935,18 @@ textarea {
         gap: 8px;
     }
 
-    .modal-footer .btn {
+    .modal-footer .btn,
+    .modal-footer .btn-action {
         width: 100% !important;
+        max-width: none !important;
         margin: 0 !important;
         min-width: 0 !important;
+        height: auto !important;
+        min-height: 44px !important;
+        font-size: 0.9rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .modal-header {
@@ -1938,11 +2165,18 @@ textarea {
     }
 
     .quick-actions {
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 8px !important;
     }
 
     .quick-actions .btn {
-        width: 100%;
+        width: auto !important;
+        flex: 1 0 auto !important;
+        min-width: max-content !important;
     }
 }
 
@@ -2198,10 +2432,18 @@ textarea {
 }
 
 /* Stock Section Header Badge */
+.product-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .product-count {
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .count-badge,
@@ -2210,6 +2452,7 @@ textarea {
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .count-badge {
@@ -2221,6 +2464,28 @@ textarea {
     background: #e7f5ff;
     color: #1971c2;
     border: 1px solid #a5d8ff;
+}
+
+@media (max-width: 576px) {
+    .product-filter-row {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .product-filter-row > label {
+        font-size: 0.72rem;
+    }
+
+    .product-count {
+        gap: 6px;
+    }
+
+    .count-badge,
+    .stock-badge {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+    }
 }
 
 .pos-page .cart-section {
@@ -2901,6 +3166,25 @@ textarea {
 }
 
 /* POS Action Grid */
+.customer-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.customer-details-grid input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+    .customer-details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .pos-actions-grid {
     display: flex;
     flex-direction: column;
@@ -3577,8 +3861,9 @@ textarea {
     }
 
     .quick-actions .btn {
-        width: 100%;
-        margin-bottom: 5px;
+        width: auto !important;
+        margin-bottom: 0 !important;
+        flex: 1 0 auto !important;
     }
 
     /* Form controls - Better mobile sizing */
@@ -3957,12 +4242,49 @@ textarea {
 }
 
 #productModal .modal-footer {
-    padding: 20px 30px 30px;
+    padding: 18px 24px 22px;
     background: #f8fafc;
     border-top: 1px solid #edf2f7;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 12px;
+}
+
+#productModal .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+#productModal .modal-footer .btn,
+#productModal .modal-footer .btn-action {
+    width: auto;
+    max-width: none !important;
+    min-width: auto;
+    height: 44px;
+    padding: 10px 22px !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+}
+
+#productModal #deleteProductBtn {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+}
+
+#productModal #deleteProductBtn:hover {
+    background: #fecaca;
+    color: #b91c1c;
 }
 
 #productModal #saveProductBtn {
@@ -6259,81 +6581,173 @@ textarea {
         flex-shrink: 0 !important;
     }
 
-    /* Modal Footer and Action Buttons - Small & Minimal Mobile Responsive */
+    /* Modal Footer and Action Buttons - Mobile Responsive (All in one row, never break) */
     #productModal .modal-footer {
-        padding: 10px 14px !important;
+        padding: 10px 12px !important;
         background: #ffffff !important;
         border-top: 1px solid #f1f5f9 !important;
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         align-items: center !important;
         gap: 8px !important;
         position: sticky;
         bottom: 0;
         z-index: 10;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
         width: 100% !important;
         box-sizing: border-box !important;
     }
 
     #productModal #deleteProductBtn {
-        height: 36px !important;
-        min-height: 36px !important;
-        max-height: 36px !important;
-        padding: 0 10px !important;
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
-        border-radius: 8px !important;
+        flex: 1 1 28% !important;
         width: auto !important;
-        flex: 0 0 auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+        padding: 0 8px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        border-radius: 10px !important;
         margin: 0 !important;
-        display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 5px !important;
+        gap: 6px !important;
         box-sizing: border-box !important;
+        white-space: nowrap !important;
+        background: #fee2e2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fca5a5 !important;
     }
 
-    #productModal #deleteProductBtn[style*="block"] {
+    #productModal #deleteProductBtn:hover {
+        background: #fecaca !important;
+    }
+
+    #productModal #deleteProductBtn[style*="none"] {
+        display: none !important;
+    }
+
+    #productModal #deleteProductBtn:not([style*="none"]) {
         display: inline-flex !important;
     }
 
     #productModal .footer-actions {
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         gap: 8px !important;
         align-items: center !important;
         flex: 1 1 auto !important;
+        min-width: 0 !important;
         width: auto !important;
         margin: 0 !important;
+        box-sizing: border-box !important;
     }
 
-    #productModal .footer-actions .btn-action,
-    #productModal #saveProductBtn,
-    #productModal .footer-actions .btn-secondary,
-    #productModal .footer-actions .close-modal {
-        min-height: 36px !important;
-        height: 36px !important;
-        max-height: 36px !important;
-        padding: 0 12px !important;
-        font-size: 0.82rem !important;
+    #productModal .footer-actions .close-modal,
+    #productModal .footer-actions .btn-secondary {
+        flex: 1 1 42% !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+        padding: 0 8px !important;
+        font-size: 0.84rem !important;
         font-weight: 600 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         box-sizing: border-box !important;
         margin: 0 !important;
-        gap: 5px !important;
+        gap: 6px !important;
         white-space: nowrap !important;
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
+        transition: all 0.2s ease !important;
     }
 
-    #productModal .footer-actions .close-modal {
-        flex: 1 1 auto !important;
+    #productModal .footer-actions .close-modal:hover,
+    #productModal .footer-actions .btn-secondary:hover {
+        background: #e2e8f0 !important;
+        color: #1e293b !important;
     }
 
     #productModal #saveProductBtn {
-        flex: 1.3 1 auto !important;
+        flex: 1.2 1 58% !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+        padding: 0 10px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 10px !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        gap: 6px !important;
+        white-space: nowrap !important;
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    #productModal #saveProductBtn:hover {
+        box-shadow: 0 6px 18px rgba(67, 97, 238, 0.45) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    #productModal .modal-footer .btn i,
+    #productModal .modal-footer .btn-action i {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+        display: inline-block !important;
+        line-height: 1 !important;
+    }
+
+    /* Extra small mobile screens: keep strict 1 row, adjust padding and font size so nothing breaks */
+    @media (max-width: 380px) {
+        #productModal .modal-footer {
+            padding: 8px 8px !important;
+            gap: 5px !important;
+            flex-wrap: nowrap !important;
+        }
+
+        #productModal .footer-actions {
+            gap: 5px !important;
+            flex-wrap: nowrap !important;
+        }
+
+        #productModal .modal-footer .btn,
+        #productModal .modal-footer .btn-action,
+        #productModal #deleteProductBtn,
+        #productModal .footer-actions .close-modal,
+        #productModal #saveProductBtn {
+            font-size: 0.78rem !important;
+            padding: 0 5px !important;
+            gap: 4px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            white-space: nowrap !important;
+        }
+
+        #productModal .modal-footer .btn i {
+            font-size: 0.78rem !important;
+        }
     }
 
     /* Product Checkbox Toggle Cards on Mobile */
@@ -6535,13 +6949,15 @@ textarea {
     }
 
     /* Standardized Compact Navbar Action Buttons */
-    .navbar-right .btn,
-    .navbar-right .btn-action,
-    .navbar-right .btn-primary,
+    .navbar-right .btn:not(.btn-action-icon),
+    .navbar-right .btn-action:not(.btn-action-icon),
+    .navbar-right .btn-primary:not(.btn-action-icon),
     .navbar-right .btn-success,
     .navbar-right .btn-secondary,
     .navbar-right .btn-danger,
-    .navbar-right #addProductBtn,
+    .navbar-right .btn-info,
+    .navbar-right .btn-dark,
+    .navbar-right .btn-outline-primary,
     .navbar-right #exportInventoryBtn,
     .navbar-right #addUserBtn,
     .navbar-right #exportUsersBtn,
@@ -6555,23 +6971,51 @@ textarea {
         min-height: 34px !important;
         max-height: 34px !important;
         padding: 0 10px !important;
-        font-size: 0.78rem !important;
+        font-size: 0.82rem !important;
         font-weight: 600 !important;
         border-radius: 8px !important;
         white-space: nowrap !important;
         min-width: auto !important;
+        max-width: none !important;
         width: auto !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         gap: 5px !important;
-        line-height: 1 !important;
+        line-height: normal !important;
+        letter-spacing: normal !important;
         box-sizing: border-box !important;
+        overflow: visible !important;
+        text-indent: 0 !important;
     }
 
-    .navbar-right .btn i,
-    .navbar-right .btn-action i {
-        font-size: 0.78rem !important;
+    .navbar-right .btn:not(.btn-action-icon) i,
+    .navbar-right .btn-action:not(.btn-action-icon) i {
+        font-size: 0.82rem !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+        display: inline-block !important;
+    }
+
+    .navbar-right .btn-action-icon {
+        width: 34px !important;
+        min-width: 34px !important;
+        max-width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        max-height: 34px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .navbar-right .btn-action-icon i {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
     }
 
     .navbar-right .pos-date-time {
@@ -7012,12 +7456,17 @@ textarea {
         font-size: 0.95rem !important;
     }
 
-    .navbar-right .btn,
-    .navbar-right .btn-action {
+    .navbar-right .btn:not(.btn-action-icon),
+    .navbar-right .btn-action:not(.btn-action-icon) {
         padding: 0 8px !important;
-        font-size: 0.75rem !important;
+        font-size: 0.78rem !important;
         height: 32px !important;
         min-height: 32px !important;
+        max-height: 32px !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: auto !important;
+        gap: 4px !important;
     }
 }
 
@@ -10344,4 +10793,105 @@ textarea {
   z-index: 1;
   filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.85));
   cursor: pointer;
+}
+
+/* ======================================
+   SHOP SETTINGS PAGE - MOBILE RESPONSIVE
+   ====================================== */
+@media (max-width: 768px) {
+    .settings-page .settings-card {
+        padding: 16px 14px;
+    }
+
+    .settings-page .tab-content.active {
+        padding: 0;
+    }
+
+    /* Tabs become a single horizontally scrollable row */
+    .settings-page .settings-tabs {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 4px;
+        margin-bottom: 16px;
+    }
+
+    .settings-page .settings-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .settings-page .settings-tabs .tab-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 8px 14px;
+        font-size: 0.82rem;
+    }
+
+    /* Stacked slug/prefix input so it never overflows */
+    .settings-page .input-with-action {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .settings-page .input-with-action .prefix,
+    .settings-page .input-with-action input {
+        border-radius: 8px !important;
+        border: 1px solid var(--light-gray, #ddd);
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Inline-styled settings groups need !important to shrink padding */
+    .settings-page .settings-group {
+        padding: 14px !important;
+        margin-top: 20px !important;
+    }
+
+    .settings-page .logo-upload {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .settings-page .theme-selector-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+    }
+
+    .settings-page .backup-options {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .settings-page .backup-card {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-page .settings-card {
+        padding: 14px 12px;
+        border-radius: 10px;
+    }
+
+    .settings-page .tab-btn {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+    }
+
+    .settings-page .theme-selector-grid {
+        grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+        gap: 8px;
+    }
+
+    .settings-page .logo-preview img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .settings-page h4 {
+        font-size: 1rem;
+        flex-wrap: wrap;
+    }
 }

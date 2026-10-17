@@ -1383,9 +1383,6 @@ class SuperAdminManager {
                             <input type="checkbox" id="status_warning" ${shop.status?.includes('warning') ? 'checked' : ''} style="margin-top: 5px; width: 18px; height: 18px; pointer-events: none;">
                         </label>
                     </div>
-                    <small class="text-muted" style="display: block; margin-top: 8px; font-style: italic;">
-                        Freeze blocks access, Stop hides data from stats, Suspend shows warning and Warning shows payment alert.
-                    </small>
                 </div>
 
                 <div style="margin-top: 20px; padding: 15px; background: #fff5f5; border-radius: 8px; border: 1px solid #feb2b2;">

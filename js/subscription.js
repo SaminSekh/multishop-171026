@@ -823,7 +823,6 @@ Thank you for your payment!
                         <img id="fullViewImage" src="" style="width: 100%; height: auto; border-radius: 8px; max-height: 80vh; object-fit: contain;">
                         <div style="padding: 15px; background: #f8fafc; margin-top: 10px; border-radius: 8px;">
                             <p style="font-weight: 600; color: #1e293b; margin: 0;">Scan QR Code to Pay</p>
-                            <p style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">Make sure to save the transaction ID after payment.</p>
                         </div>
                     </div>
                 </div>

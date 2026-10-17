@@ -78,7 +78,7 @@
                 <div class="product-grid-section">
                     <div class="section-header">
                         <h4><i class="fas fa-box"></i> Available Products</h4>
-                        <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="product-filter-row">
                             <label style="display:flex;align-items:center;gap:5px;font-size:0.75rem;color:#64748b;cursor:pointer;user-select:none;">
                                 <input type="checkbox" id="hideOutOfStock" checked style="width:14px;height:14px;accent-color:var(--primary);cursor:pointer;">
                                 Hide out of stock
@@ -219,7 +219,7 @@
                                 <i class="fas fa-chevron-down" style="font-size:0.7rem;color:#94a3b8;"></i>
                             </div>
                             <div id="customerDetailsFields" style="display:none;margin-top:10px;">
-                                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                                <div class="customer-details-grid">
                                     <input type="text" id="customerName" placeholder="Customer Name" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
                                     <input type="tel" id="customerPhone" placeholder="Phone Number" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
                                 </div>
@@ -400,7 +400,6 @@
                             <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Points to Add (⭐)</label>
                             <input type="number" id="posAddPointsInput" placeholder="100" min="1" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
                             <div id="posAddPercentChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
-                            <small style="color:#64748b;font-size:0.75rem;margin-top:3px;display:block;">100 pts = ₹1.00 cash value</small>
                         </div>
                         <div class="form-group" style="margin-bottom:14px;">
                             <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Note / Description</label>

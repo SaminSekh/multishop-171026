@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Super Admin - Shop Management System</title>
-    <link rel="stylesheet" href="css/style.css?v=11">
+    <link rel="stylesheet" href="css/style.css?v=15">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .metadata-field-row {
@@ -603,8 +603,6 @@
                         <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                             <i class="fas fa-globe"></i> Domain Management
                         </h4>
-                        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 15px;">Configure the domains
-                            used for the admin panel and public shops.</p>
 
                         <div class="form-group" style="margin-bottom: 15px;">
                             <label style="font-size: 0.85rem; font-weight: 600;">Main/Admin Domain (e.g.
@@ -635,8 +633,6 @@
                         <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                             <i class="fas fa-list"></i> Global Categories
                         </h4>
-                        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 15px;">Add categories that will
-                            be available to all shops. Business-specific categories are added automatically.</p>
 
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;flex-wrap: wrap;">
                             <input type="text" id="newGlobalCategory" class="form-control"
@@ -667,8 +663,6 @@
                             <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-tags"></i> Category Product Types
                             </h4>
-                            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 15px;">Customize the list of
-                                sub-types/types available for each major category.</p>
 
                             <div class="form-group">
                                 <label style="font-size: 0.85rem;">Select Category</label>
@@ -690,9 +684,6 @@
                                     <i class="fas fa-clipboard-list" style="color: var(--primary-color);"></i> Extra
                                     Metadata Fields
                                 </h5>
-                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 15px;">Define custom
-                                    fields
-                                    for products in this category (e.g. Material, Expiry Date).</p>
 
                                 <div id="metadataFieldsList" style="margin-bottom: 15px;">
                                     <!-- Dynamic list of metadata fields -->
@@ -754,10 +745,7 @@
                         <select id="shopType" required>
                             <option value="general">General Store</option>
                         </select>
-                        <small id="shopTypeHint" style="display: block; margin-top: 6px; color: #64748b; font-size: 0.8rem;">
-                            <i class="fas fa-info-circle"></i> Shop type determines which product categories and types the shop owner can see. 
-                            Configure types in "Product Types" section below.
-                        </small>
+                        <small id="shopTypeHint" style="display: none;"></small>
                     </div>
 
                     <div class="form-group">
@@ -981,8 +969,6 @@
                         <div class="stat-info">
                             <h3>Shop Balance</h3>
                             <div class="value" id="currentBalance">0.00</div>
-                            <small style="color: var(--gray); font-size: 11px; margin-top: 2px; display: block;">(Sales
-                                + Income + Asset) - (Exp + Pending)</small>
                         </div>
                     </div>
 
