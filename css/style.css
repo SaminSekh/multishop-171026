@@ -1814,7 +1814,7 @@ textarea {
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
 
 #invoiceModal .modal-footer .btn {
@@ -3493,6 +3493,28 @@ textarea {
 .pos-tx-restock:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.pos-tx-edit {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #0284c7;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.pos-tx-edit:hover {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #7dd3fc;
 }
 
 .pos-tx-status.partial {

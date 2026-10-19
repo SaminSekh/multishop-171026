@@ -560,14 +560,20 @@ class CreditManager {
 
             if (error) throw error;
 
+            this.currentCredit = credit;
+
             // Populate form
             document.getElementById('creditModalTitle').textContent = 'Edit Credit';
             document.getElementById('creditId').value = credit.id;
             document.getElementById('buyerName').value = credit.buyer_name || '';
             document.getElementById('buyerPhone').value = credit.buyer_phone || '';
             document.getElementById('buyerAddress').value = credit.buyer_address || '';
-            document.getElementById('totalAmount').value = credit.total_amount || '';
-            document.getElementById('amountPaid').value = credit.amount_paid || '';
+            document.getElementById('totalAmount').value = parseFloat(credit.total_amount || 0).toFixed(2);
+            document.getElementById('amountPaid').value = parseFloat(credit.amount_paid || 0).toFixed(2);
+
+            const pendingVal = parseFloat(credit.pending_amount != null ? credit.pending_amount : (credit.total_amount - credit.amount_paid)) || 0;
+            const pendingInput = document.getElementById('pendingAmount');
+            if (pendingInput) pendingInput.value = pendingVal.toFixed(2);
 
             // Format dates for input
             const creditDate = credit.credit_date ? credit.credit_date.split('T')[0] : '';
@@ -577,6 +583,22 @@ class CreditManager {
             document.getElementById('dueDate').value = dueDate;
             document.getElementById('creditNotes').value = credit.notes || '';
 
+            // Load products from linked sale if exists
+            if (credit.sale_id) {
+                const { data: items } = await supabaseClient
+                    .from('sale_items')
+                    .select('*')
+                    .eq('sale_id', credit.sale_id);
+                this.originalCreditItems = (items || []).map(i => ({ ...i }));
+                this.currentCreditItems = (items || []).map(i => ({ ...i }));
+            } else {
+                this.originalCreditItems = [];
+                this.currentCreditItems = [];
+            }
+
+            this.renderCreditProducts();
+            this.setupCreditAmountListeners();
+
             // Show delete button for admin
             document.getElementById('deleteCreditBtn').style.display =
                 this.currentUser.role === 'shop_admin' ? 'block' : 'none';
@@ -585,135 +607,369 @@ class CreditManager {
             document.getElementById('creditModal').classList.add('active');
 
         } catch (error) {
-
+            console.error('Failed to load credit details:', error);
             showNotification('Failed to load credit details', 'error');
         } finally {
             showLoading(false);
         }
     }
 
-    addProductToCreditForm() {
-        const productsList = document.getElementById('creditProducts');
-        const productCount = productsList.children.length + 1;
+    setupCreditAmountListeners() {
+        const totalInput = document.getElementById('totalAmount');
+        const paidInput = document.getElementById('amountPaid');
+        const pendingInput = document.getElementById('pendingAmount');
 
-        const productHtml = `
-            <div class="credit-product-item" data-index="${productCount}">
-                <div class="form-row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-                    <div class="form-group" style="flex:2;position:relative;">
-                        <input type="text" placeholder="Search product..." class="product-search" autocomplete="off" style="width:100%;">
-                        <input type="hidden" class="product-id">
-                        <div class="product-search-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
-                    </div>
-                    <div class="form-group" style="flex:0.5;">
-                        <input type="number" placeholder="Qty" class="product-quantity" min="1" value="1" required style="width:100%;">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <input type="number" placeholder="Price" class="product-price" step="0.01" min="0" required style="width:100%;">
-                    </div>
-                    <div class="form-group" style="flex:0;">
-                        <button type="button" class="btn btn-sm btn-danger remove-product-btn">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+        if (paidInput && !paidInput._hasCreditListener) {
+            paidInput._hasCreditListener = true;
+            paidInput.addEventListener('input', () => {
+                const total = parseFloat(totalInput?.value || 0) || 0;
+                const paid = parseFloat(paidInput.value || 0) || 0;
+                if (pendingInput) pendingInput.value = Math.max(0, total - paid).toFixed(2);
+            });
+        }
+
+        if (pendingInput && !pendingInput._hasCreditListener) {
+            pendingInput._hasCreditListener = true;
+            pendingInput.addEventListener('input', () => {
+                const total = parseFloat(totalInput?.value || 0) || 0;
+                const pending = parseFloat(pendingInput.value || 0) || 0;
+                if (paidInput) paidInput.value = Math.max(0, total - pending).toFixed(2);
+            });
+        }
+
+        if (totalInput && !totalInput._hasCreditListener) {
+            totalInput._hasCreditListener = true;
+            totalInput.addEventListener('input', () => {
+                const total = parseFloat(totalInput.value || 0) || 0;
+                const paid = parseFloat(paidInput?.value || 0) || 0;
+                if (pendingInput) pendingInput.value = Math.max(0, total - paid).toFixed(2);
+            });
+        }
+    }
+
+    renderCreditProducts() {
+        const container = document.getElementById('creditProducts');
+        if (!container) return;
+
+        if (!this.currentCreditItems || this.currentCreditItems.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 14px; color: #94a3b8; font-size: 0.82rem; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 8px;">
+                    <i class="fas fa-box-open me-1"></i> No products attached to this credit purchase. Click "+ Add Product" to attach items.
                 </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = this.currentCreditItems.map((item, index) => {
+            const lineTotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+            const imgUrl = item.product_image || 'https://via.placeholder.com/32';
+
+            return `
+                <div class="credit-product-card" data-index="${index}" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <img src="${imgUrl}" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0; flex-shrink: 0;">
+                    <div style="flex: 2; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.product_name}">
+                            ${item.product_name}
+                        </div>
+                        <div style="font-size: 0.7rem; color: #64748b;">SKU: ${item.sku || 'N/A'}</div>
+                    </div>
+                    <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.72rem; color: #64748b;">Qty:</span>
+                        <input type="number" class="credit-item-qty" data-index="${index}" min="1" step="1" value="${item.quantity}" style="width: 55px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 600; text-align: center;">
+                    </div>
+                    <div style="flex: 1.2; display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.72rem; color: #64748b;">Price:</span>
+                        <input type="number" class="credit-item-price" data-index="${index}" min="0" step="0.01" value="${parseFloat(item.unit_price).toFixed(2)}" style="width: 75px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 600; text-align: right;">
+                    </div>
+                    <div class="credit-item-line-total" style="font-weight: 700; font-size: 0.85rem; color: #0f172a; min-width: 65px; text-align: right;">
+                        ${formatCurrency(lineTotal)}
+                    </div>
+                    <button type="button" class="btn btn-sm credit-remove-product" data-index="${index}" title="Remove Product" style="background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <i class="fas fa-trash-alt" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+        // Listeners for quantity changes (in-place updates without losing focus)
+        container.querySelectorAll('.credit-item-qty').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const val = parseInt(e.target.value);
+                if (this.currentCreditItems[idx]) {
+                    this.currentCreditItems[idx].quantity = isNaN(val) ? 0 : val;
+                    const lineTotal = (parseFloat(this.currentCreditItems[idx].quantity) || 0) * (parseFloat(this.currentCreditItems[idx].unit_price) || 0);
+                    const card = input.closest('.credit-product-card');
+                    if (card) {
+                        const totalCell = card.querySelector('.credit-item-line-total');
+                        if (totalCell) totalCell.textContent = formatCurrency(lineTotal);
+                    }
+                    this.recalcCreditFromProducts();
+                }
+            });
+            input.addEventListener('blur', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                if (this.currentCreditItems[idx]) {
+                    if (isNaN(parseInt(e.target.value)) || parseInt(e.target.value) < 1) {
+                        this.currentCreditItems[idx].quantity = 1;
+                        e.target.value = 1;
+                        const lineTotal = (parseFloat(this.currentCreditItems[idx].quantity) || 0) * (parseFloat(this.currentCreditItems[idx].unit_price) || 0);
+                        const card = input.closest('.credit-product-card');
+                        if (card) {
+                            const totalCell = card.querySelector('.credit-item-line-total');
+                            if (totalCell) totalCell.textContent = formatCurrency(lineTotal);
+                        }
+                        this.recalcCreditFromProducts();
+                    }
+                }
+            });
+        });
+
+        // Listeners for price changes (in-place updates without losing focus)
+        container.querySelectorAll('.credit-item-price').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const val = parseFloat(e.target.value);
+                if (this.currentCreditItems[idx]) {
+                    this.currentCreditItems[idx].unit_price = isNaN(val) ? 0 : Math.max(0, val);
+                    const lineTotal = (parseFloat(this.currentCreditItems[idx].quantity) || 0) * (parseFloat(this.currentCreditItems[idx].unit_price) || 0);
+                    const card = input.closest('.credit-product-card');
+                    if (card) {
+                        const totalCell = card.querySelector('.credit-item-line-total');
+                        if (totalCell) totalCell.textContent = formatCurrency(lineTotal);
+                    }
+                    this.recalcCreditFromProducts();
+                }
+            });
+        });
+
+        // Listeners for remove buttons
+        container.querySelectorAll('.credit-remove-product').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.index);
+                if (this.currentCreditItems[idx]) {
+                    this.currentCreditItems.splice(idx, 1);
+                    this.renderCreditProducts();
+                    this.recalcCreditFromProducts();
+                }
+            });
+        });
+    }
+
+    recalcCreditFromProducts() {
+        if (!this.currentCreditItems || this.currentCreditItems.length === 0) return;
+        const subtotal = this.currentCreditItems.reduce((sum, item) => {
+            return sum + ((parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0));
+        }, 0);
+
+        const totalInput = document.getElementById('totalAmount');
+        const paidInput = document.getElementById('amountPaid');
+        const pendingInput = document.getElementById('pendingAmount');
+
+        if (totalInput) totalInput.value = subtotal.toFixed(2);
+        const paid = parseFloat(paidInput?.value || 0) || 0;
+        if (pendingInput) pendingInput.value = Math.max(0, subtotal - paid).toFixed(2);
+    }
+
+    addProductToCreditForm() {
+        this.currentCreditItems = this.currentCreditItems || [];
+        const container = document.getElementById('creditProducts');
+        if (!container) return;
+
+        // Check if search row already exists
+        let searchRow = container.querySelector('.credit-search-row');
+        if (searchRow) {
+            searchRow.querySelector('.credit-product-search')?.focus();
+            return;
+        }
+
+        searchRow = document.createElement('div');
+        searchRow.className = 'credit-search-row';
+        searchRow.style.cssText = 'position: relative; margin-bottom: 8px;';
+        searchRow.innerHTML = `
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" class="credit-product-search" placeholder="Type product name or SKU to add..." autocomplete="off" style="flex: 1; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem;">
+                <button type="button" class="btn btn-sm btn-secondary cancel-search-btn" style="padding: 6px 10px; font-size: 0.78rem;">Cancel</button>
             </div>
+            <div class="credit-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1050; box-shadow: 0 8px 20px rgba(0,0,0,0.12); margin-top: 4px;"></div>
         `;
 
-        productsList.insertAdjacentHTML('beforeend', productHtml);
+        container.prepend(searchRow);
 
-        const newItem = productsList.lastElementChild;
-        const removeBtn = newItem.querySelector('.remove-product-btn');
-        removeBtn.addEventListener('click', () => newItem.remove());
+        const searchInput = searchRow.querySelector('.credit-product-search');
+        const resultsDiv = searchRow.querySelector('.credit-search-results');
+        const cancelBtn = searchRow.querySelector('.cancel-search-btn');
 
-        // Setup product search
-        const searchInput = newItem.querySelector('.product-search');
-        const resultsDiv = newItem.querySelector('.product-search-results');
-        const hiddenId = newItem.querySelector('.product-id');
-        const priceInput = newItem.querySelector('.product-price');
+        cancelBtn.addEventListener('click', () => searchRow.remove());
 
-        searchInput.addEventListener('input', async (e) => {
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
             const term = e.target.value.trim();
-            if (term.length < 1) { resultsDiv.style.display = 'none'; return; }
+            if (term.length < 1) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
 
-            try {
-                // Search products
-                const { data: products } = await supabaseClient
-                    .from('products')
-                    .select('id, product_name, sku, selling_price, product_image, stock')
-                    .eq('shop_id', this.shopId)
-                    .or(`product_name.ilike.%${term}%,sku.ilike.%${term}%`)
-                    .limit(6);
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const { data: products } = await supabaseClient
+                        .from('products')
+                        .select('id, product_name, sku, selling_price, cost_price, product_image, stock')
+                        .eq('shop_id', this.shopId)
+                        .or(`product_name.ilike.%${term}%,sku.ilike.%${term}%`)
+                        .limit(6);
 
-                // Also search variants
+                    const { data: variants } = await supabaseClient
+                        .from('product_variants')
+                        .select('id, product_id, variant_name, sku, price, image_url, stock')
+                        .eq('shop_id', this.shopId)
+                        .ilike('variant_name', `%${term}%`)
+                        .limit(6);
+
+                    let html = '';
+                    if (products && products.length > 0) {
+                        products.forEach(p => {
+                            html += `
+                                <div class="credit-result-item" data-id="${p.id}" data-name="${p.product_name}" data-sku="${p.sku || ''}" data-price="${p.selling_price}" data-cost="${p.cost_price || 0}" data-image="${p.product_image || ''}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;">
+                                    <img src="${p.product_image || 'https://via.placeholder.com/30'}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;">
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.product_name}</div>
+                                        <div style="font-size:0.7rem;color:#64748b;">SKU: ${p.sku || 'N/A'} • Stock: ${p.stock}</div>
+                                    </div>
+                                    <div style="font-weight:700;font-size:0.82rem;color:var(--primary);">${formatCurrency(p.selling_price)}</div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    if (variants && variants.length > 0) {
+                        variants.forEach(v => {
+                            html += `
+                                <div class="credit-result-item" data-id="${v.product_id}" data-variant-id="${v.id}" data-name="${v.variant_name}" data-sku="${v.sku || ''}" data-price="${v.price}" data-cost="0" data-image="${v.image_url || ''}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;background:#fefce8;">
+                                    <img src="${v.image_url || 'https://via.placeholder.com/30'}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;">
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><i class="fas fa-layer-group" style="font-size:0.6rem;color:#d97706;margin-right:4px;"></i>${v.variant_name}</div>
+                                        <div style="font-size:0.7rem;color:#64748b;">Variant • Stock: ${v.stock}</div>
+                                    </div>
+                                    <div style="font-weight:700;font-size:0.82rem;color:#d97706;">${formatCurrency(v.price)}</div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    if (html) {
+                        resultsDiv.innerHTML = html;
+                        resultsDiv.style.display = 'block';
+
+                        resultsDiv.querySelectorAll('.credit-result-item').forEach(itemEl => {
+                            itemEl.addEventListener('click', () => {
+                                const newProduct = {
+                                    product_id: itemEl.dataset.id || null,
+                                    variant_id: itemEl.dataset.variantId || null,
+                                    product_name: itemEl.dataset.name,
+                                    sku: itemEl.dataset.sku,
+                                    product_image: itemEl.dataset.image || null,
+                                    quantity: 1,
+                                    unit_price: parseFloat(itemEl.dataset.price) || 0,
+                                    original_price: parseFloat(itemEl.dataset.price) || 0,
+                                    cost_price: parseFloat(itemEl.dataset.cost) || 0,
+                                    isNew: true
+                                };
+                                this.currentCreditItems.push(newProduct);
+                                searchRow.remove();
+                                this.renderCreditProducts();
+                                this.recalcCreditFromProducts();
+                            });
+                        });
+                    } else {
+                        resultsDiv.innerHTML = '<div style="padding:10px;text-align:center;color:#94a3b8;font-size:0.8rem;">No products found</div>';
+                        resultsDiv.style.display = 'block';
+                    }
+                } catch (e) {
+                    resultsDiv.style.display = 'none';
+                }
+            }, 200);
+        });
+
+        searchInput.focus();
+    }
+
+    async applyStockDelta(productId, variantId, productName, stockChange) {
+        if (!stockChange || stockChange === 0) return true;
+        try {
+            let isVariant = false;
+            let sizeKey = null;
+
+            const sizeMatch = productName ? productName.match(/\(Size (.*?)\)$/) : null;
+            if (sizeMatch) sizeKey = sizeMatch[1].trim();
+
+            if (variantId) {
+                const { data: v } = await supabaseClient
+                    .from('product_variants')
+                    .select('id, stock, attributes')
+                    .eq('id', variantId)
+                    .single();
+                if (v) {
+                    isVariant = true;
+                    let updatedAttrs = v.attributes || {};
+                    if (typeof updatedAttrs === 'string') {
+                        try { updatedAttrs = JSON.parse(updatedAttrs); } catch(e) { updatedAttrs = {}; }
+                    }
+                    if (sizeKey) {
+                        let sizeStock = updatedAttrs.size_stock || updatedAttrs.storage_stock || {};
+                        const cur = parseInt(sizeStock[sizeKey] ?? v.stock) || 0;
+                        sizeStock[sizeKey] = Math.max(0, cur + stockChange);
+                        updatedAttrs.size_stock = sizeStock;
+                    }
+                    const newStock = Math.max(0, (parseInt(v.stock) || 0) + stockChange);
+                    await supabaseClient.from('product_variants').update({ stock: newStock, attributes: updatedAttrs }).eq('id', v.id);
+                }
+            } else if (productId) {
                 const { data: variants } = await supabaseClient
                     .from('product_variants')
-                    .select('id, product_id, variant_name, sku, price, image_url, stock')
-                    .eq('shop_id', this.shopId)
-                    .ilike('variant_name', `%${term}%`)
-                    .limit(6);
-
-                let resultsHtml = '';
-
-                if (products && products.length > 0) {
-                    products.forEach(p => {
-                        resultsHtml += `
-                            <div class="product-result-item" data-id="${p.id}" data-name="${p.product_name}" data-price="${p.selling_price}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background 0.1s;">
-                                <img src="${p.product_image || 'https://via.placeholder.com/30'}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;">
-                                <div style="flex:1;min-width:0;">
-                                    <div style="font-size:0.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.product_name}</div>
-                                    <div style="font-size:0.7rem;color:#64748b;">SKU: ${p.sku} • Stock: ${p.stock}</div>
-                                </div>
-                                <div style="font-weight:700;font-size:0.8rem;color:var(--primary);">${formatCurrency(p.selling_price)}</div>
-                            </div>
-                        `;
+                    .select('id, stock, variant_name, attributes')
+                    .eq('product_id', productId);
+                if (variants && variants.length > 0 && productName) {
+                    const pName = productName.toLowerCase();
+                    const matched = variants.find(v => {
+                        const vn = v.variant_name ? v.variant_name.toLowerCase().trim() : '';
+                        return vn && (pName.includes(`- ${vn}`) || pName.includes(`(${vn})`) || pName.includes(vn));
                     });
+                    if (matched) {
+                        isVariant = true;
+                        let updatedAttrs = matched.attributes || {};
+                        if (typeof updatedAttrs === 'string') {
+                            try { updatedAttrs = JSON.parse(updatedAttrs); } catch(e) { updatedAttrs = {}; }
+                        }
+                        if (sizeKey) {
+                            let sizeStock = updatedAttrs.size_stock || updatedAttrs.storage_stock || {};
+                            const cur = parseInt(sizeStock[sizeKey] ?? matched.stock) || 0;
+                            sizeStock[sizeKey] = Math.max(0, cur + stockChange);
+                            updatedAttrs.size_stock = sizeStock;
+                        }
+                        const newStock = Math.max(0, (parseInt(matched.stock) || 0) + stockChange);
+                        await supabaseClient.from('product_variants').update({ stock: newStock, attributes: updatedAttrs }).eq('id', matched.id);
+                    }
                 }
-
-                if (variants && variants.length > 0) {
-                    variants.forEach(v => {
-                        resultsHtml += `
-                            <div class="product-result-item" data-id="${v.product_id}" data-variant-id="${v.id}" data-name="${v.variant_name}" data-price="${v.price}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background 0.1s;background:#fefce8;">
-                                <img src="${v.image_url || 'https://via.placeholder.com/30'}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;">
-                                <div style="flex:1;min-width:0;">
-                                    <div style="font-size:0.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><i class="fas fa-layer-group" style="font-size:0.6rem;color:#d97706;margin-right:4px;"></i>${v.variant_name}</div>
-                                    <div style="font-size:0.7rem;color:#64748b;">Variant • Stock: ${v.stock}</div>
-                                </div>
-                                <div style="font-weight:700;font-size:0.8rem;color:#d97706;">${formatCurrency(v.price)}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                if (resultsHtml) {
-                    resultsDiv.innerHTML = resultsHtml;
-                    resultsDiv.style.display = 'block';
-
-                    resultsDiv.querySelectorAll('.product-result-item').forEach(item => {
-                        item.addEventListener('mouseenter', () => item.style.background = item.dataset.variantId ? '#fef9c3' : '#f8fafc');
-                        item.addEventListener('mouseleave', () => item.style.background = item.dataset.variantId ? '#fefce8' : 'white');
-                        item.addEventListener('click', () => {
-                            searchInput.value = item.dataset.name;
-                            hiddenId.value = item.dataset.id;
-                            priceInput.value = parseFloat(item.dataset.price).toFixed(2);
-                            resultsDiv.style.display = 'none';
-                        });
-                    });
-                } else {
-                    resultsDiv.innerHTML = '<div style="padding:12px;text-align:center;color:#94a3b8;font-size:0.8rem;">No products found</div>';
-                    resultsDiv.style.display = 'block';
-                }
-            } catch (err) {
-                resultsDiv.style.display = 'none';
             }
-        });
 
-        // Hide results on blur (with delay for click)
-        searchInput.addEventListener('blur', () => {
-            setTimeout(() => { resultsDiv.style.display = 'none'; }, 200);
-        });
-
-        // Focus to show search
-        searchInput.focus();
+            if (!isVariant && productId) {
+                const { data: prod } = await supabaseClient
+                    .from('products')
+                    .select('stock')
+                    .eq('id', productId)
+                    .single();
+                if (prod) {
+                    const newStock = Math.max(0, (parseInt(prod.stock) || 0) + stockChange);
+                    await supabaseClient.from('products').update({ stock: newStock }).eq('id', productId);
+                }
+            }
+            return true;
+        } catch (e) {
+            console.warn('Stock delta error:', e);
+            return false;
+        }
     }
 
     async saveCredit() {
@@ -724,6 +980,7 @@ class CreditManager {
         const buyerAddress = document.getElementById('buyerAddress').value.trim();
         const totalAmount = parseFloat(document.getElementById('totalAmount').value) || 0;
         const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+        const pendingAmount = parseFloat(document.getElementById('pendingAmount')?.value || (totalAmount - amountPaid)) || 0;
         const creditDate = document.getElementById('creditDate').value;
         const dueDate = document.getElementById('dueDate').value;
         const notes = document.getElementById('creditNotes').value.trim();
@@ -734,12 +991,6 @@ class CreditManager {
             return;
         }
 
-        if (amountPaid > totalAmount) {
-            showNotification('Amount paid cannot exceed total amount', 'error');
-            return;
-        }
-
-        const pendingAmount = totalAmount - amountPaid;
         const status = pendingAmount === 0 ? 'completed' :
             pendingAmount === totalAmount ? 'pending' : 'partial';
 
@@ -760,6 +1011,78 @@ class CreditManager {
                 notes: notes || null,
                 updated_at: new Date().toISOString()
             };
+
+            // If credit has products and is linked to a sale, adjust stock and update sale_items + sales
+            if (this.currentCredit?.sale_id && this.currentCreditItems && this.currentCreditItems.length > 0) {
+                const saleId = this.currentCredit.sale_id;
+
+                // 1. Stock adjustments
+                const originalMap = {};
+                (this.originalCreditItems || []).forEach(orig => {
+                    originalMap[orig.id] = orig;
+                });
+
+                const currentIds = new Set();
+                for (const item of this.currentCreditItems) {
+                    if (item.id && originalMap[item.id]) {
+                        currentIds.add(item.id);
+                        const orig = originalMap[item.id];
+                        const stockChange = (parseInt(orig.quantity) || 0) - (parseInt(item.quantity) || 0);
+                        if (stockChange !== 0) {
+                            await this.applyStockDelta(item.product_id, item.variant_id, item.product_name, stockChange);
+                        }
+                    } else if (item.isNew) {
+                        const stockChange = -(parseInt(item.quantity) || 0);
+                        await this.applyStockDelta(item.product_id, item.variant_id, item.product_name, stockChange);
+                    }
+                }
+
+                // Removed items
+                for (const orig of (this.originalCreditItems || [])) {
+                    if (!currentIds.has(orig.id)) {
+                        const stockChange = parseInt(orig.quantity) || 0;
+                        await this.applyStockDelta(orig.product_id, orig.variant_id, orig.product_name, stockChange);
+                        await supabaseClient.from('sale_items').delete().eq('id', orig.id);
+                    }
+                }
+
+                // 2. Update sale_items
+                for (const item of this.currentCreditItems) {
+                    const lineTotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+                    if (item.id && originalMap[item.id]) {
+                        await supabaseClient.from('sale_items').update({
+                            quantity: parseInt(item.quantity) || 1,
+                            unit_price: parseFloat(item.unit_price) || 0,
+                            total_price: lineTotal,
+                            price_changed: item.unit_price !== (item.original_price || item.unit_price)
+                        }).eq('id', item.id);
+                    } else if (item.isNew) {
+                        await supabaseClient.from('sale_items').insert([{
+                            sale_id: saleId,
+                            product_id: item.product_id || null,
+                            product_name: item.product_name,
+                            sku: item.sku || 'N/A',
+                            product_image: item.product_image || null,
+                            quantity: parseInt(item.quantity) || 1,
+                            unit_price: parseFloat(item.unit_price) || 0,
+                            original_price: parseFloat(item.original_price || item.unit_price) || 0,
+                            cost_price: parseFloat(item.cost_price || 0) || 0,
+                            total_price: lineTotal,
+                            price_changed: item.unit_price !== (item.original_price || item.unit_price)
+                        }]);
+                    }
+                }
+
+                // 3. Update sales record
+                await supabaseClient.from('sales').update({
+                    total_amount: totalAmount,
+                    amount_paid: amountPaid,
+                    pending_amount: pendingAmount,
+                    sale_status: pendingAmount <= 0 ? 'completed' : 'credit',
+                    buyer_name: buyerName,
+                    buyer_phone: buyerPhone
+                }).eq('id', saleId).eq('shop_id', this.shopId);
+            }
 
             let result;
 
@@ -805,10 +1128,11 @@ class CreditManager {
 
             // Close modal and refresh
             this.closeAllModals();
+            localStorage.setItem('shopDataChanged', Date.now().toString());
             await this.loadCredits();
 
         } catch (error) {
-
+            console.error('Failed to save credit:', error);
             showNotification('Failed to save credit: ' + error.message, 'error');
         } finally {
             showLoading(false);

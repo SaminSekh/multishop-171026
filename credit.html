@@ -177,15 +177,20 @@
                         <textarea id="buyerAddress" rows="2"></textarea>
                     </div>
 
-                    <div class="form-row">
+                    <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
                         <div class="form-group">
                             <label><i class="fas fa-coins"></i> Total Amount *</label>
                             <input type="number" id="totalAmount" required step="0.01" min="0">
                         </div>
 
                         <div class="form-group">
-                            <label><i class="fas fa-money-bill"></i> Amount Paid *</label>
+                            <label><i class="fas fa-money-bill-wave"></i> Received (Paid) *</label>
                             <input type="number" id="amountPaid" required step="0.01" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-hand-holding-usd"></i> Pending Amount *</label>
+                            <input type="number" id="pendingAmount" required step="0.01" min="0" style="background: #fef2f2; border-color: #fca5a5; color: #991b1b; font-weight: 700;">
                         </div>
                     </div>
 
@@ -207,14 +212,16 @@
                     </div>
 
                     <!-- Products List for this Credit -->
-                    <div class="products-section">
-                        <h5><i class="fas fa-box"></i> Products in this Sale</h5>
-                        <div id="creditProducts">
+                    <div class="products-section" style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h5 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: #334155;"><i class="fas fa-box text-primary"></i> Products in this Purchase</h5>
+                            <button type="button" class="btn btn-sm btn-action btn-primary" id="addProductToCredit" data-tip="Add Product to Credit" style="padding: 5px 12px; font-size: 0.78rem;">
+                                <i class="fas fa-plus"></i> Add Product
+                            </button>
+                        </div>
+                        <div id="creditProducts" style="max-height: 240px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 8px;">
                             <!-- Products will be added here -->
                         </div>
-                        <button type="button" class="btn btn-sm btn-action" id="addProductToCredit" data-tip="Add Product to Credit">
-                            <i class="fas fa-plus"></i> Add Product
-                        </button>
                     </div>
                 </form>
             </div>
@@ -282,7 +289,7 @@
     <script src="js/auth.js"></script>
     <script src="js/menu-manager.js"></script>
     <script src="js/main.js?v=2"></script>
-    <script src="js/credit.js"></script>
+    <script src="js/credit.js?v=2"></script>
 </body>
 
 </html>

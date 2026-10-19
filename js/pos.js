@@ -169,6 +169,16 @@ class POSManager {
             });
         }
 
+        // Clear product search on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape' && e.key !== 'Esc') return;
+            const input = document.getElementById('productSearch');
+            if (!input || !input.value) return;
+            input.value = '';
+            this.posPage = 1;
+            this.filterProductsCombined();
+        });
+
         // Filter buttons
         document.querySelectorAll('[data-filter]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -400,6 +410,14 @@ class POSManager {
             });
         });
 
+        // POS Save Sale Edits button
+        const posSaveEditsBtn = document.getElementById('posSaveSaleEditsBtn');
+        if (posSaveEditsBtn) {
+            posSaveEditsBtn.addEventListener('click', () => {
+                this.saveSaleEdits();
+            });
+        }
+
         // Load held sale button
         const loadHeldSaleBtn = document.getElementById('loadHeldSaleBtn');
         if (loadHeldSaleBtn) {
@@ -470,6 +488,45 @@ class POSManager {
         const json = JSON.stringify(members);
         localStorage.setItem(primaryKey, json);
         localStorage.setItem('spinwin_members_v1', json);
+    }
+
+    getMemberForSale(sale) {
+        try {
+            const phone = String(
+                (sale && (sale.buyer_phone || sale.customer_phone || sale.phone)) ||
+                document.getElementById('customerPhone')?.value ||
+                document.getElementById('buyerPhone')?.value ||
+                ''
+            ).replace(/[^0-9]/g, '');
+            const name = String(
+                (sale && (sale.buyer_name || sale.customer_name)) ||
+                document.getElementById('customerName')?.value ||
+                document.getElementById('buyerName')?.value ||
+                ''
+            ).trim().toLowerCase();
+
+            const members = this.getMembers();
+            let match = null;
+            if (phone) {
+                match = members.find(m => String(m.phone || '').replace(/[^0-9]/g, '') === phone);
+            }
+            if (!match && name) {
+                match = members.find(m => String(m.name || '').trim().toLowerCase() === name);
+            }
+            return match || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    getSaleMemberPoints(sale) {
+        try {
+            const match = this.getMemberForSale(sale);
+            if (!match) return null;
+            return Math.max(0, parseInt(match.credits, 10) || 0);
+        } catch (e) {
+            return null;
+        }
     }
 
     getAppsScriptUrl() {
@@ -688,7 +745,7 @@ class POSManager {
         };
     }
 
-    openPosMemberActionModal(member, actionType, isNew = false) {
+    openPosMemberActionModal(member, actionType, isNew = false, options = {}) {
         const modal = document.getElementById('posMemberActionModal');
         if (!modal) return;
 
@@ -708,13 +765,25 @@ class POSManager {
 
         if (actionType === 'add') {
             titleEl.innerHTML = isNew
-                ? `<i class="fas fa-user-plus" style="color:#10b981;"></i> Register & Add Points for ${member.name}`
+                ? `<i class="fas fa-user-plus" style="color:#10b981;"></i> Register & Add Points for ${member.name || 'New Customer'}`
                 : `<i class="fas fa-plus-circle" style="color:#10b981;"></i> Add Points for ${member.name}`;
             submitBtn.textContent = isNew ? 'Register & Add Points' : 'Add Points';
             submitBtn.className = 'btn btn-success';
 
             addFields.style.display = 'block';
             deductFields.style.display = 'none';
+
+            // Editable details when registering a new member
+            const newMemberFields = document.getElementById('posNewMemberFields');
+            if (newMemberFields) {
+                newMemberFields.style.display = isNew ? 'block' : 'none';
+                if (isNew) {
+                    const nameInput = document.getElementById('posNewMemberNameInput');
+                    const phoneInput = document.getElementById('posNewMemberPhoneInput');
+                    if (nameInput) nameInput.value = member.name || '';
+                    if (phoneInput) phoneInput.value = member.phone || '';
+                }
+            }
 
             // Membership type selector (only when registering a new member)
             const typeGroup = document.getElementById('posAddMemberTypeGroup');
@@ -764,11 +833,14 @@ class POSManager {
                 });
             };
 
-            purAmt.value = (this.cartTotal || 0).toFixed(2);
-            ptsInput.value = Math.max(1, computePts(1, parseFloat(purAmt.value || 0) || 0));
+            const purchaseAmount = options.purchaseAmount != null
+                ? (parseFloat(options.purchaseAmount) || 0)
+                : (this.cartTotal || 0);
+            purAmt.value = purchaseAmount.toFixed(2);
+            ptsInput.value = Math.max(1, computePts(1, purchaseAmount));
             renderChips();
             purAmt.oninput = renderChips;
-            noteInput.value = `POS Purchase Bill (₹${(this.cartTotal || 0).toFixed(2)})`;
+            noteInput.value = options.note || `POS Purchase Bill (₹${purchaseAmount.toFixed(2)})`;
         } else {
             titleEl.innerHTML = `<i class="fas fa-minus-circle" style="color:#f59e0b;"></i> Redeem Points for ${member.name}`;
             submitBtn.textContent = 'Redeem & Apply Discount';
@@ -806,11 +878,32 @@ class POSManager {
         const form = document.getElementById('posMemberActionForm');
         form.onsubmit = (e) => {
             e.preventDefault();
-            this.processPosMemberActionSubmit(member, isNew);
+            this.processPosMemberActionSubmit(member, isNew, options);
         };
     }
 
-    processPosMemberActionSubmit(member, isNew = false) {
+    openInvoiceMemberAction(sale) {
+        if (!sale) return;
+        const buyerName = String(sale.buyer_name || sale.customer_name || '').trim();
+        const buyerPhone = String(sale.buyer_phone || sale.customer_phone || sale.phone || '').trim();
+        const deliveryCharge = parseFloat(this._lastInvoice?.deliveryCharge) || 0;
+        const purchaseAmount = (parseFloat(sale.total_amount) || 0) + deliveryCharge;
+        const note = `POS Purchase Bill${sale.invoice_number ? ` (${sale.invoice_number})` : ''}`;
+
+        const existingMember = this.getMemberForSale(sale);
+        const member = existingMember || this.buildNewMember(buyerName, buyerPhone);
+
+        this.openPosMemberActionModal(member, 'add', !existingMember, {
+            purchaseAmount,
+            note,
+            fromInvoice: true,
+            saleId: sale.id,
+            fillBuyerName: !buyerName,
+            fillBuyerPhone: !buyerPhone
+        });
+    }
+
+    processPosMemberActionSubmit(member, isNew = false, options = {}) {
         const modal = document.getElementById('posMemberActionModal');
         const actionType = document.getElementById('posActionType').value;
         const memberId = document.getElementById('posMemberId').value;
@@ -836,6 +929,36 @@ class POSManager {
             const note = document.getElementById('posAddNoteInput').value.trim() || 'POS Purchase Credits';
 
             if (isNew) {
+                const nameInput = document.getElementById('posNewMemberNameInput');
+                const phoneInput = document.getElementById('posNewMemberPhoneInput');
+                const enteredName = nameInput ? nameInput.value.trim() : '';
+                const enteredPhone = phoneInput ? phoneInput.value.trim() : '';
+
+                if (!enteredName) {
+                    showNotification('Please enter the customer name', 'error');
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+                if (!enteredPhone) {
+                    showNotification('Please enter the customer phone number', 'error');
+                    if (phoneInput) phoneInput.focus();
+                    return;
+                }
+
+                const cleanPhone = enteredPhone.replace(/[^0-9]/g, '');
+                const duplicate = members.find(m =>
+                    String(m.id) !== String(targetMember.id) &&
+                    String(m.phone || '').replace(/[^0-9]/g, '') === cleanPhone
+                );
+                if (duplicate) {
+                    showNotification('A member with this phone number already exists', 'error');
+                    if (phoneInput) phoneInput.focus();
+                    return;
+                }
+
+                targetMember.name = enteredName;
+                targetMember.phone = enteredPhone;
+
                 const typeSelect = document.getElementById('posAddMemberType');
                 const chosenType = (typeSelect && typeSelect.value) ? typeSelect.value : (targetMember.type || 'Direct Member');
                 targetMember.type = chosenType;
@@ -903,6 +1026,35 @@ class POSManager {
         if (customerPhone) customerPhone.dispatchEvent(new Event('input'));
         const buyerPhone = document.getElementById('buyerPhone');
         if (buyerPhone) buyerPhone.dispatchEvent(new Event('input'));
+
+        if (options.fromInvoice && this._lastInvoice) {
+            const inv = this._lastInvoice;
+
+            // Fill the sale's missing customer details with the member details
+            const updates = {};
+            if (options.fillBuyerName && targetMember.name) updates.buyer_name = targetMember.name;
+            if (options.fillBuyerPhone && targetMember.phone) updates.buyer_phone = targetMember.phone;
+
+            if (Object.keys(updates).length) {
+                if (String(inv.sale.id) === String(options.saleId)) {
+                    if (updates.buyer_name) inv.sale.buyer_name = updates.buyer_name;
+                    if (updates.buyer_phone) inv.sale.buyer_phone = updates.buyer_phone;
+                }
+                if (typeof supabaseClient !== 'undefined') {
+                    supabaseClient
+                        .from('sales')
+                        .update(updates)
+                        .eq('id', options.saleId)
+                        .then(({ error }) => {
+                            if (error) console.warn('Failed to link customer to sale:', error.message);
+                        })
+                        .catch(e => console.warn('Failed to link customer to sale:', e));
+                }
+            }
+
+            this._invoiceMemberOverride = { saleId: options.saleId, memberId: targetMember.id };
+            this.showInvoice(inv.sale, inv.cartItems, inv.deliveryCharge);
+        }
     }
 
     checkHeldSales() {
@@ -3560,6 +3712,9 @@ class POSManager {
                             </div>
                             <div class="pos-tx-actions">
                                 <span class="pos-tx-status ${statusClass}">${statusText}</span>
+                                <button class="pos-tx-edit" data-sale-id="${transaction.id}" data-tip="Edit products & payment">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                                 <button class="pos-tx-restock" data-sale-id="${transaction.id}" ${isRefunded ? 'disabled' : ''}
                                     data-tip="${isRefunded ? 'Already restocked' : isPartial ? 'Restock more items' : 'Restock / refund items'}">
                                     <i class="fas fa-undo-alt"></i>
@@ -3570,6 +3725,13 @@ class POSManager {
                 }).join('')}
             </div>
         `;
+
+        container.querySelectorAll('.pos-tx-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.openEditSaleModal(btn.getAttribute('data-sale-id'));
+            });
+        });
 
         container.querySelectorAll('.pos-tx-restock').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -3972,10 +4134,24 @@ class POSManager {
         const shopLogo = this.shopData?.shop_logo || this.shopLogo || '';
         deliveryCharge = parseFloat(deliveryCharge) || 0;
         cartItems = cartItems || [];
+        this._lastInvoice = { sale, cartItems, deliveryCharge };
 
         // Receipt wording comes from Settings > POS so the shop owner controls it
         const receiptHeader = String(this.receiptHeader || '').trim() || 'Thank you for shopping with us!';
         const receiptFooter = String(this.receiptFooter || '').trim() || 'Please visit again!';
+
+        // Customer's current Members Club points, printed below the bill total
+        let overrideMember = null;
+        if (this._invoiceMemberOverride && String(this._invoiceMemberOverride.saleId) === String(sale.id)) {
+            overrideMember = this.getMembers().find(m => String(m.id) === String(this._invoiceMemberOverride.memberId)) || null;
+            this._invoiceMemberOverride = null;
+        }
+        const memberPoints = overrideMember
+            ? Math.max(0, parseInt(overrideMember.credits, 10) || 0)
+            : this.getSaleMemberPoints(sale);
+        const pointsHtml = memberPoints !== null
+            ? `<div class="info-row" style="margin-top:5px;"><span>Next time purchase credit points:</span> <span>${memberPoints} pts</span></div>`
+            : '';
 
         // Optional QR image uploaded in Settings > POS, printed below the receipt
         const receiptQrUrl = String(this.receiptQrImageUrl || '').trim();
@@ -4100,6 +4276,7 @@ class POSManager {
                     ${deliveryCharge > 0 ? `<div class="info-row"><span>Delivery Charge:</span> <span>+${formatCurrency(deliveryCharge)}</span></div>` : ''}
                     <div class="total-row"><span>TOTAL:</span> <span>${formatCurrency(parseFloat(sale.total_amount) + deliveryCharge)}</span></div>
                     ${sale.pending_amount > 0 ? `<div class="info-row" style="color:red;margin-top:5px;"><span>Pending:</span> <span>${formatCurrency(sale.pending_amount)}</span></div>` : ''}
+                    ${pointsHtml}
                 </div>
 
                 <div class="footer text-center">
@@ -4172,6 +4349,11 @@ class POSManager {
                             <span>Pending:</span>
                             <span>${formatCurrency(sale.pending_amount)}</span>
                         </div>` : ''}
+                        ${memberPoints !== null ? `
+                        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                            <span>Next time purchase credit points:</span>
+                            <span>${memberPoints} pts</span>
+                        </div>` : ''}
                     </div>
                 </div>
             `;
@@ -4181,6 +4363,26 @@ class POSManager {
             if (printBtn) {
                 printBtn.onclick = () => {
                     this.printHtmlReceipt(printableInvoiceHtml);
+                };
+            }
+
+            // Setup Add Member button (only for completed sales)
+            const addMemberBtn = document.getElementById('posAddInvoiceMemberBtn');
+            if (addMemberBtn) {
+                const canAddMember = !!sale.id;
+                addMemberBtn.style.display = canAddMember ? '' : 'none';
+                addMemberBtn.disabled = !canAddMember;
+                addMemberBtn.onclick = () => {
+                    this.openInvoiceMemberAction(sale);
+                };
+            }
+
+            // Setup Edit Sale button
+            const editCompletedBtn = document.getElementById('posEditInvoiceSaleBtn');
+            if (editCompletedBtn) {
+                editCompletedBtn.onclick = () => {
+                    invoiceModal.classList.remove('active');
+                    this.openEditSaleModal(sale.id);
                 };
             }
 
@@ -4220,7 +4422,7 @@ class POSManager {
             // Adjust modal dialog size nicely
             const modalContent = invoiceModal.querySelector('.modal-content');
             if (modalContent) {
-                modalContent.style.maxWidth = '460px';
+                modalContent.style.maxWidth = '560px';
             }
 
             invoiceModal.classList.add('active');
@@ -4600,6 +4802,650 @@ class POSManager {
         document.querySelectorAll('.modal').forEach(modal => {
             modal.classList.remove('active');
         });
+    }
+
+    async openEditSaleModal(saleId) {
+        if (!saleId) return;
+        showLoading(true);
+        try {
+            // Fetch sale
+            const { data: sale, error: saleError } = await supabaseClient
+                .from('sales')
+                .select('*')
+                .eq('id', saleId)
+                .eq('shop_id', this.shopId)
+                .single();
+
+            if (saleError || !sale) throw new Error(saleError?.message || 'Sale record not found');
+
+            // Fetch sale items
+            const { data: saleItems, error: itemsError } = await supabaseClient
+                .from('sale_items')
+                .select('*')
+                .eq('sale_id', saleId);
+
+            if (itemsError) throw itemsError;
+
+            this.currentEditSale = sale;
+            // Store deep copy of original items to compute stock deltas
+            this.originalSaleItems = (saleItems || []).map(item => ({ ...item }));
+            this.currentEditItems = (saleItems || []).map(item => ({ ...item }));
+
+            // Populate form fields
+            const invoiceSpan = document.getElementById('posEditSaleInvoice');
+            if (invoiceSpan) invoiceSpan.textContent = sale.invoice_number || 'N/A';
+
+            const idInput = document.getElementById('posEditSaleId');
+            if (idInput) idInput.value = sale.id;
+
+            const buyerInput = document.getElementById('posEditSaleBuyerName');
+            if (buyerInput) buyerInput.value = sale.buyer_name || '';
+
+            const phoneInput = document.getElementById('posEditSaleBuyerPhone');
+            if (phoneInput) phoneInput.value = sale.buyer_phone || '';
+
+            const methodSelect = document.getElementById('posEditSalePaymentMethod');
+            if (methodSelect) methodSelect.value = sale.payment_method || 'cash';
+
+            const discountInput = document.getElementById('posEditSaleDiscount');
+            if (discountInput) discountInput.value = parseFloat(sale.discount_amount || 0).toFixed(2);
+
+            const amountPaidInput = document.getElementById('posEditSaleAmountPaid');
+            if (amountPaidInput) amountPaidInput.value = parseFloat(sale.amount_paid != null ? sale.amount_paid : sale.total_amount).toFixed(2);
+
+            const pendingInput = document.getElementById('posEditSalePendingAmount');
+            if (pendingInput) pendingInput.value = parseFloat(sale.pending_amount != null ? sale.pending_amount : 0).toFixed(2);
+
+            const cur1 = document.getElementById('posEditSaleCurrencySymbol1');
+            const cur2 = document.getElementById('posEditSaleCurrencySymbol2');
+            const sym = getCurrencySymbol();
+            if (cur1) cur1.textContent = sym;
+            if (cur2) cur2.textContent = sym;
+
+            // Render items & calculate totals
+            this.renderEditSaleItems();
+            this.calculateEditSaleTotals();
+            this.setupEditSaleSearch();
+
+            // Setup listeners for amounts
+            this.setupEditSaleAmountListeners();
+
+            // Show modal
+            const modal = document.getElementById('posEditSaleModal');
+            if (modal) modal.classList.add('active');
+
+        } catch (err) {
+            console.error('Error opening edit sale modal in POS:', err);
+            showNotification('Failed to load sale: ' + (err.message || err), 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    setupEditSaleAmountListeners() {
+        const discountInput = document.getElementById('posEditSaleDiscount');
+        const amountPaidInput = document.getElementById('posEditSaleAmountPaid');
+        const pendingInput = document.getElementById('posEditSalePendingAmount');
+
+        if (discountInput && !discountInput._hasEditListener) {
+            discountInput._hasEditListener = true;
+            discountInput.addEventListener('input', () => this.calculateEditSaleTotals());
+        }
+
+        if (amountPaidInput && !amountPaidInput._hasEditListener) {
+            amountPaidInput._hasEditListener = true;
+            amountPaidInput.addEventListener('input', () => this.calculateEditSaleTotals('paid'));
+        }
+
+        if (pendingInput && !pendingInput._hasEditListener) {
+            pendingInput._hasEditListener = true;
+            pendingInput.addEventListener('input', () => this.calculateEditSaleTotals('pending'));
+        }
+    }
+
+    renderEditSaleItems() {
+        const body = document.getElementById('posEditSaleItemsBody');
+        const countSpan = document.getElementById('posEditSaleItemCount');
+        if (!body) return;
+
+        if (countSpan) countSpan.textContent = this.currentEditItems.length;
+
+        if (this.currentEditItems.length === 0) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 24px; color: #94a3b8;">
+                        <i class="fas fa-shopping-basket fa-2x" style="margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                        No products in this purchase. Use the search bar above to add products.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        body.innerHTML = this.currentEditItems.map((item, index) => {
+            const lineTotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+            const imgUrl = item.product_image || 'https://via.placeholder.com/40?text=No+Img';
+
+            return `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 14px; vertical-align: middle;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="${imgUrl}" alt="${escapeHtml(item.product_name)}" style="width: 38px; height: 38px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0; flex-shrink: 0;">
+                            <div style="min-width: 0;">
+                                <div style="font-weight: 600; color: #1e293b; font-size: 0.85rem; line-height: 1.3;" title="${escapeHtml(item.product_name)}">
+                                    ${escapeHtml(item.product_name)}
+                                </div>
+                                <div style="font-size: 0.72rem; color: #64748b;">
+                                    SKU: ${escapeHtml(item.sku || 'N/A')}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 10px 8px; vertical-align: middle;">
+                        <input type="number" class="pos-edit-item-qty" data-index="${index}" min="1" step="1" value="${item.quantity}" style="width: 70px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; font-weight: 600; text-align: center;">
+                    </td>
+                    <td style="padding: 10px 8px; vertical-align: middle;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span style="color: #64748b; font-size: 0.8rem;">${getCurrencySymbol()}</span>
+                            <input type="number" class="pos-edit-item-price" data-index="${index}" min="0" step="0.01" value="${parseFloat(item.unit_price || 0).toFixed(2)}" style="width: 85px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; font-weight: 600; text-align: right;">
+                        </div>
+                    </td>
+                    <td class="pos-edit-item-line-total" style="padding: 10px 14px; text-align: right; vertical-align: middle; font-weight: 700; color: #0f172a; font-size: 0.88rem;">
+                        ${formatCurrency(lineTotal)}
+                    </td>
+                    <td style="padding: 10px 8px; text-align: center; vertical-align: middle;">
+                        <button type="button" class="btn btn-sm pos-edit-remove-item" data-index="${index}" title="Remove Product" style="background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s;">
+                            <i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Attach listeners for qty inputs (in-place updates without losing focus)
+        body.querySelectorAll('.pos-edit-item-qty').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const val = parseInt(e.target.value);
+                if (this.currentEditItems[idx]) {
+                    this.currentEditItems[idx].quantity = isNaN(val) ? 0 : val;
+                    const lineTotal = (parseFloat(this.currentEditItems[idx].quantity) || 0) * (parseFloat(this.currentEditItems[idx].unit_price) || 0);
+                    const tr = input.closest('tr');
+                    if (tr) {
+                        const totalCell = tr.querySelector('.pos-edit-item-line-total');
+                        if (totalCell) totalCell.textContent = formatCurrency(lineTotal);
+                    }
+                    this.calculateEditSaleTotals();
+                }
+            });
+            input.addEventListener('blur', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                if (this.currentEditItems[idx]) {
+                    if (isNaN(parseInt(e.target.value)) || parseInt(e.target.value) < 1) {
+                        this.currentEditItems[idx].quantity = 1;
+                        e.target.value = 1;
+                        const lineTotal = (parseFloat(this.currentEditItems[idx].quantity) || 0) * (parseFloat(this.currentEditItems[idx].unit_price) || 0);
+                        const tr = input.closest('tr');
+                        if (tr) {
+                            const totalCell = tr.querySelector('.pos-edit-item-line-total');
+                            if (totalCell) totalCell.textContent = formatCurrency(lineTotal);
+                        }
+                        this.calculateEditSaleTotals();
+                    }
+                }
+            });
+        });
+
+        // Attach listeners for price inputs (in-place updates without losing focus)
+        body.querySelectorAll('.pos-edit-item-price').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                const val = parseFloat(e.target.value);
+                if (this.currentEditItems[idx]) {
+                    this.currentEditItems[idx].unit_price = isNaN(val) ? 0 : Math.max(0, val);
+                    const lineTotal = (parseFloat(this.currentEditItems[idx].quantity) || 0) * (parseFloat(this.currentEditItems[idx].unit_price) || 0);
+                    const tr = input.closest('tr');
+                    if (tr) {
+                        const totalCell = tr.querySelector('.pos-edit-item-line-total');
+                        if (totalCell) totalCell.textContent = formatCurrency(lineTotal);
+                    }
+                    this.calculateEditSaleTotals();
+                }
+            });
+        });
+
+        // Attach listeners for remove buttons
+        body.querySelectorAll('.pos-edit-remove-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.index);
+                if (this.currentEditItems[idx]) {
+                    this.currentEditItems.splice(idx, 1);
+                    this.renderEditSaleItems();
+                    this.calculateEditSaleTotals();
+                }
+            });
+        });
+    }
+
+    calculateEditSaleTotals(changedField = null) {
+        const subtotal = this.currentEditItems.reduce((sum, item) => {
+            return sum + ((parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0));
+        }, 0);
+
+        const discountInput = document.getElementById('posEditSaleDiscount');
+        const discount = parseFloat(discountInput ? discountInput.value : 0) || 0;
+        const total = Math.max(0, subtotal - discount);
+
+        const subtotalEl = document.getElementById('posEditSaleSubtotal');
+        if (subtotalEl) subtotalEl.textContent = formatCurrency(subtotal);
+
+        const totalEl = document.getElementById('posEditSaleTotalDisplay');
+        if (totalEl) totalEl.textContent = formatCurrency(total);
+
+        const amountPaidInput = document.getElementById('posEditSaleAmountPaid');
+        const pendingInput = document.getElementById('posEditSalePendingAmount');
+        const methodSelect = document.getElementById('posEditSalePaymentMethod');
+
+        if (changedField === 'paid') {
+            const paid = parseFloat(amountPaidInput ? amountPaidInput.value : 0) || 0;
+            const pending = Math.max(0, total - paid);
+            if (pendingInput) pendingInput.value = pending.toFixed(2);
+            if (pending > 0 && methodSelect && methodSelect.value !== 'credit') {
+                methodSelect.value = 'credit';
+            }
+        } else if (changedField === 'pending') {
+            const pending = parseFloat(pendingInput ? pendingInput.value : 0) || 0;
+            const paid = Math.max(0, total - pending);
+            if (amountPaidInput) amountPaidInput.value = paid.toFixed(2);
+            if (pending > 0 && methodSelect && methodSelect.value !== 'credit') {
+                methodSelect.value = 'credit';
+            }
+        } else {
+            // Recalculated due to items or discount change
+            const currentPaid = parseFloat(amountPaidInput ? amountPaidInput.value : 0) || 0;
+            const currentPending = parseFloat(pendingInput ? pendingInput.value : 0) || 0;
+            if (currentPending === 0 && (!this.currentEditSale || this.currentEditSale.payment_method !== 'credit')) {
+                // Was paid in full
+                if (amountPaidInput) amountPaidInput.value = total.toFixed(2);
+                if (pendingInput) pendingInput.value = '0.00';
+            } else {
+                // Adjust pending based on current paid
+                const newPending = Math.max(0, total - currentPaid);
+                if (pendingInput) pendingInput.value = newPending.toFixed(2);
+            }
+        }
+    }
+
+    setupEditSaleSearch() {
+        const searchInput = document.getElementById('posEditSaleProductSearch');
+        const resultsDiv = document.getElementById('posEditSaleSearchResults');
+        if (!searchInput || !resultsDiv) return;
+
+        if (searchInput._hasSearchListener) return;
+        searchInput._hasSearchListener = true;
+
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const term = e.target.value.trim();
+            if (term.length < 1) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const { data: products } = await supabaseClient
+                        .from('products')
+                        .select('id, product_name, sku, selling_price, cost_price, product_image, stock')
+                        .eq('shop_id', this.shopId)
+                        .or(`product_name.ilike.%${term}%,sku.ilike.%${term}%`)
+                        .limit(6);
+
+                    const { data: variants } = await supabaseClient
+                        .from('product_variants')
+                        .select('id, product_id, variant_name, sku, price, image_url, stock, attributes')
+                        .eq('shop_id', this.shopId)
+                        .ilike('variant_name', `%${term}%`)
+                        .limit(6);
+
+                    let html = '';
+                    if (products && products.length > 0) {
+                        products.forEach(p => {
+                            html += `
+                                <div class="pos-edit-search-result-item" data-id="${p.id}" data-name="${escapeHtml(p.product_name)}" data-sku="${escapeHtml(p.sku || '')}" data-price="${p.selling_price}" data-cost="${p.cost_price || 0}" data-image="${escapeHtml(p.product_image || '')}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background 0.1s;">
+                                    <img src="${p.product_image || 'https://via.placeholder.com/32'}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;">
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.84rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.product_name}</div>
+                                        <div style="font-size:0.72rem;color:#64748b;">SKU: ${p.sku || 'N/A'} • Stock: ${p.stock}</div>
+                                    </div>
+                                    <div style="font-weight:700;font-size:0.85rem;color:var(--primary);">${formatCurrency(p.selling_price)}</div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    if (variants && variants.length > 0) {
+                        variants.forEach(v => {
+                            html += `
+                                <div class="pos-edit-search-result-item" data-id="${v.product_id}" data-variant-id="${v.id}" data-name="${escapeHtml(v.variant_name)}" data-sku="${escapeHtml(v.sku || '')}" data-price="${v.price}" data-cost="0" data-image="${escapeHtml(v.image_url || '')}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;background:#fefce8;transition:background 0.1s;">
+                                    <img src="${v.image_url || 'https://via.placeholder.com/32'}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;">
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:0.84rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><i class="fas fa-layer-group" style="font-size:0.65rem;color:#d97706;margin-right:4px;"></i>${v.variant_name}</div>
+                                        <div style="font-size:0.72rem;color:#64748b;">Variant • Stock: ${v.stock}</div>
+                                    </div>
+                                    <div style="font-weight:700;font-size:0.85rem;color:#d97706;">${formatCurrency(v.price)}</div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    if (html) {
+                        resultsDiv.innerHTML = html;
+                        resultsDiv.style.display = 'block';
+
+                        resultsDiv.querySelectorAll('.pos-edit-search-result-item').forEach(itemEl => {
+                            itemEl.addEventListener('mouseenter', () => itemEl.style.background = itemEl.dataset.variantId ? '#fef9c3' : '#f8fafc');
+                            itemEl.addEventListener('mouseleave', () => itemEl.style.background = itemEl.dataset.variantId ? '#fefce8' : 'white');
+                            itemEl.addEventListener('click', () => {
+                                const newProduct = {
+                                    product_id: itemEl.dataset.id || null,
+                                    variant_id: itemEl.dataset.variantId || null,
+                                    product_name: itemEl.dataset.name,
+                                    sku: itemEl.dataset.sku,
+                                    product_image: itemEl.dataset.image || null,
+                                    quantity: 1,
+                                    unit_price: parseFloat(itemEl.dataset.price) || 0,
+                                    original_price: parseFloat(itemEl.dataset.price) || 0,
+                                    cost_price: parseFloat(itemEl.dataset.cost) || 0,
+                                    isNew: true
+                                };
+                                this.currentEditItems.push(newProduct);
+                                searchInput.value = '';
+                                resultsDiv.style.display = 'none';
+                                this.renderEditSaleItems();
+                                this.calculateEditSaleTotals();
+                            });
+                        });
+                    } else {
+                        resultsDiv.innerHTML = '<div style="padding:10px;text-align:center;color:#94a3b8;font-size:0.8rem;">No products found</div>';
+                        resultsDiv.style.display = 'block';
+                    }
+                } catch (e) {
+                    resultsDiv.style.display = 'none';
+                }
+            }, 200);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                resultsDiv.style.display = 'none';
+            }
+        });
+    }
+
+    async applyStockDelta(productId, variantId, productName, stockChange) {
+        if (!stockChange || stockChange === 0) return true;
+        try {
+            let isVariant = false;
+            let sizeKey = null;
+
+            const sizeMatch = productName ? productName.match(/\(Size (.*?)\)$/) : null;
+            if (sizeMatch) sizeKey = sizeMatch[1].trim();
+
+            if (variantId) {
+                const { data: v } = await supabaseClient
+                    .from('product_variants')
+                    .select('id, stock, attributes')
+                    .eq('id', variantId)
+                    .single();
+                if (v) {
+                    isVariant = true;
+                    let updatedAttrs = v.attributes || {};
+                    if (typeof updatedAttrs === 'string') {
+                        try { updatedAttrs = JSON.parse(updatedAttrs); } catch(e) { updatedAttrs = {}; }
+                    }
+                    if (sizeKey) {
+                        let sizeStock = updatedAttrs.size_stock || updatedAttrs.storage_stock || {};
+                        const cur = parseInt(sizeStock[sizeKey] ?? v.stock) || 0;
+                        sizeStock[sizeKey] = Math.max(0, cur + stockChange);
+                        updatedAttrs.size_stock = sizeStock;
+                    }
+                    const newStock = Math.max(0, (parseInt(v.stock) || 0) + stockChange);
+                    await supabaseClient.from('product_variants').update({ stock: newStock, attributes: updatedAttrs }).eq('id', v.id);
+                }
+            } else if (productId) {
+                const { data: variants } = await supabaseClient
+                    .from('product_variants')
+                    .select('id, stock, variant_name, attributes')
+                    .eq('product_id', productId);
+                if (variants && variants.length > 0 && productName) {
+                    const pName = productName.toLowerCase();
+                    const matched = variants.find(v => {
+                        const vn = v.variant_name ? v.variant_name.toLowerCase().trim() : '';
+                        return vn && (pName.includes(`- ${vn}`) || pName.includes(`(${vn})`) || pName.includes(vn));
+                    });
+                    if (matched) {
+                        isVariant = true;
+                        let updatedAttrs = matched.attributes || {};
+                        if (typeof updatedAttrs === 'string') {
+                            try { updatedAttrs = JSON.parse(updatedAttrs); } catch(e) { updatedAttrs = {}; }
+                        }
+                        if (sizeKey) {
+                            let sizeStock = updatedAttrs.size_stock || updatedAttrs.storage_stock || {};
+                            const cur = parseInt(sizeStock[sizeKey] ?? matched.stock) || 0;
+                            sizeStock[sizeKey] = Math.max(0, cur + stockChange);
+                            updatedAttrs.size_stock = sizeStock;
+                        }
+                        const newStock = Math.max(0, (parseInt(matched.stock) || 0) + stockChange);
+                        await supabaseClient.from('product_variants').update({ stock: newStock, attributes: updatedAttrs }).eq('id', matched.id);
+                    }
+                }
+            }
+
+            if (!isVariant && productId) {
+                const { data: prod } = await supabaseClient
+                    .from('products')
+                    .select('stock')
+                    .eq('id', productId)
+                    .single();
+                if (prod) {
+                    const newStock = Math.max(0, (parseInt(prod.stock) || 0) + stockChange);
+                    await supabaseClient.from('products').update({ stock: newStock }).eq('id', productId);
+                }
+            }
+            return true;
+        } catch (e) {
+            console.warn('Stock delta error:', e);
+            return false;
+        }
+    }
+
+    async saveSaleEdits() {
+        if (!this.currentEditSale) return;
+        const saleId = this.currentEditSale.id;
+
+        if (this.currentEditItems.length === 0) {
+            showNotification('Purchase must have at least one product', 'warning');
+            return;
+        }
+
+        const buyerName = document.getElementById('posEditSaleBuyerName')?.value.trim() || '';
+        const buyerPhone = document.getElementById('posEditSaleBuyerPhone')?.value.trim() || '';
+        const paymentMethod = document.getElementById('posEditSalePaymentMethod')?.value || 'cash';
+        const discountAmount = parseFloat(document.getElementById('posEditSaleDiscount')?.value || 0) || 0;
+        const amountPaid = parseFloat(document.getElementById('posEditSaleAmountPaid')?.value || 0) || 0;
+        const pendingAmount = parseFloat(document.getElementById('posEditSalePendingAmount')?.value || 0) || 0;
+
+        const subtotal = this.currentEditItems.reduce((sum, item) => {
+            return sum + ((parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0));
+        }, 0);
+        const totalAmount = Math.max(0, subtotal - discountAmount);
+
+        if (pendingAmount > 0 && !buyerName && !buyerPhone) {
+            showNotification('Customer Name or Phone is required when there is a Pending Amount (Credit)', 'warning');
+            return;
+        }
+
+        showLoading(true);
+
+        try {
+            // 1. Compute & apply stock changes
+            const originalMap = {};
+            (this.originalSaleItems || []).forEach(orig => {
+                originalMap[orig.id] = orig;
+            });
+
+            const currentIds = new Set();
+            for (const item of this.currentEditItems) {
+                if (item.id && originalMap[item.id]) {
+                    currentIds.add(item.id);
+                    const orig = originalMap[item.id];
+                    const stockChange = (parseInt(orig.quantity) || 0) - (parseInt(item.quantity) || 0);
+                    if (stockChange !== 0) {
+                        await this.applyStockDelta(item.product_id, item.variant_id, item.product_name, stockChange);
+                    }
+                } else if (item.isNew) {
+                    // New item added -> deduct from stock
+                    const stockChange = -(parseInt(item.quantity) || 0);
+                    await this.applyStockDelta(item.product_id, item.variant_id, item.product_name, stockChange);
+                }
+            }
+
+            // For items in original sale that were removed -> return to stock
+            for (const orig of (this.originalSaleItems || [])) {
+                if (!currentIds.has(orig.id)) {
+                    const stockChange = parseInt(orig.quantity) || 0;
+                    await this.applyStockDelta(orig.product_id, orig.variant_id, orig.product_name, stockChange);
+                    // Delete from sale_items
+                    await supabaseClient.from('sale_items').delete().eq('id', orig.id);
+                }
+            }
+
+            // 2. Update existing items & insert new items into sale_items
+            for (const item of this.currentEditItems) {
+                const lineTotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+                if (item.id && originalMap[item.id]) {
+                    // Update existing
+                    await supabaseClient.from('sale_items').update({
+                        quantity: parseInt(item.quantity) || 1,
+                        unit_price: parseFloat(item.unit_price) || 0,
+                        total_price: lineTotal,
+                        price_changed: item.unit_price !== (item.original_price || item.unit_price)
+                    }).eq('id', item.id);
+                } else if (item.isNew) {
+                    // Insert new
+                    await supabaseClient.from('sale_items').insert([{
+                        sale_id: saleId,
+                        product_id: item.product_id || null,
+                        product_name: item.product_name,
+                        sku: item.sku || 'N/A',
+                        product_image: item.product_image || null,
+                        quantity: parseInt(item.quantity) || 1,
+                        unit_price: parseFloat(item.unit_price) || 0,
+                        original_price: parseFloat(item.original_price || item.unit_price) || 0,
+                        cost_price: parseFloat(item.cost_price || 0) || 0,
+                        total_price: lineTotal,
+                        price_changed: item.unit_price !== (item.original_price || item.unit_price)
+                    }]);
+                }
+            }
+
+            // 3. Update sales record
+            const newSaleStatus = pendingAmount > 0 ? 'credit' : (this.currentEditSale.sale_status === 'refunded' ? 'refunded' : 'completed');
+            const saleUpdateData = {
+                total_amount: totalAmount,
+                discount_amount: discountAmount,
+                amount_paid: amountPaid,
+                pending_amount: pendingAmount,
+                payment_method: paymentMethod,
+                sale_status: newSaleStatus,
+                buyer_name: buyerName || null,
+                buyer_phone: buyerPhone || null
+            };
+
+            const { error: saleErr } = await supabaseClient
+                .from('sales')
+                .update(saleUpdateData)
+                .eq('id', saleId)
+                .eq('shop_id', this.shopId);
+
+            if (saleErr) throw saleErr;
+
+            // 4. Synchronize credits table
+            const { data: existingCredit } = await supabaseClient
+                .from('credits')
+                .select('*')
+                .eq('sale_id', saleId)
+                .maybeSingle();
+
+            if (pendingAmount > 0) {
+                const creditStatus = amountPaid > 0 ? 'partial' : 'pending';
+                if (existingCredit) {
+                    await supabaseClient.from('credits').update({
+                        buyer_name: buyerName || existingCredit.buyer_name,
+                        buyer_phone: buyerPhone || existingCredit.buyer_phone,
+                        total_amount: totalAmount,
+                        amount_paid: amountPaid,
+                        pending_amount: pendingAmount,
+                        status: creditStatus,
+                        updated_at: new Date().toISOString()
+                    }).eq('id', existingCredit.id);
+                } else {
+                    await supabaseClient.from('credits').insert([{
+                        shop_id: this.shopId,
+                        sale_id: saleId,
+                        buyer_name: buyerName || 'Customer',
+                        buyer_phone: buyerPhone || '',
+                        total_amount: totalAmount,
+                        amount_paid: amountPaid,
+                        pending_amount: pendingAmount,
+                        credit_date: new Date().toISOString().split('T')[0],
+                        status: creditStatus,
+                        created_by: this.currentUser?.id || null
+                    }]);
+                }
+            } else if (existingCredit) {
+                // Was paid off completely
+                await supabaseClient.from('credits').update({
+                    amount_paid: totalAmount,
+                    pending_amount: 0,
+                    status: 'completed',
+                    updated_at: new Date().toISOString()
+                }).eq('id', existingCredit.id);
+            }
+
+            // 5. Audit Log
+            if (window.authManager) {
+                await window.authManager.createAuditLog('update', 'sales', saleId, null, {
+                    action: 'edit_sale_and_products_pos',
+                    invoice_number: this.currentEditSale.invoice_number,
+                    new_total: totalAmount,
+                    new_paid: amountPaid,
+                    new_pending: pendingAmount,
+                    items_count: this.currentEditItems.length
+                }).catch(e => console.warn('Audit log failed:', e));
+            }
+
+            // Close modal & refresh
+            const modal = document.getElementById('posEditSaleModal');
+            if (modal) modal.classList.remove('active');
+
+            localStorage.setItem('shopDataChanged', Date.now().toString());
+            showNotification(`Sale ${this.currentEditSale.invoice_number || ''} updated successfully!`, 'success');
+
+            // Refresh recent transactions and products in POS
+            await Promise.allSettled([
+                this.loadRecentTransactions(),
+                this.loadProducts()
+            ]);
+
+        } catch (error) {
+            console.error('Error saving sale edits in POS:', error);
+            showNotification('Failed to update sale: ' + (error.message || error), 'error');
+        } finally {
+            showLoading(false);
+        }
     }
 }
 

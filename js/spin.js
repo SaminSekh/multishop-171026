@@ -4215,6 +4215,59 @@ async function onShareMemberCardWhatsApp() {
   }
 }
 
+function getMemberCardBlob(member) {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = el.memberCardCanvas ? el.memberCardCanvas.width : 960;
+    canvas.height = el.memberCardCanvas ? el.memberCardCanvas.height : 540;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    drawMemberCard(member, canvas, ctx);
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const base64 = dataUrl.split(",")[1] || "";
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: "image/png" });
+  } catch (e) {
+    console.warn("Member card image generation failed:", e);
+    return null;
+  }
+}
+
+async function copyMemberCardToClipboard(member) {
+  if (!navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === "undefined") {
+    return false;
+  }
+  try {
+    const blob = getMemberCardBlob(member);
+    if (!blob) return false;
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return true;
+  } catch (e) {
+    console.warn("Member card clipboard copy failed:", e);
+    return false;
+  }
+}
+
+async function messageMemberWithCard(memberId) {
+  const member = state.members.find((m) => m.id === memberId);
+  if (!member) return;
+
+  const copied = await copyMemberCardToClipboard(member);
+  showToast(
+    copied
+      ? "Loyalty Card image copied — paste it (Ctrl+V) into the WhatsApp chat."
+      : "Could not copy the card image. You can still download it from the card view.",
+    copied ? "success" : "info"
+  );
+
+  const cleanNumber = safeText(member.phone).replace(/[^0-9]/g, "");
+  const waUrl = cleanNumber ? `https://wa.me/${cleanNumber}` : "https://wa.me/";
+  window.open(waUrl, "_blank", "noopener");
+}
+
 function onDownloadMemberCard() {
   const member = state.activeMemberForCard;
   if (!member || !el.memberCardCanvas) return;
@@ -4755,7 +4808,7 @@ function renderMembersSection() {
     if (cleanPhone) {
       phoneTd.innerHTML = `<div class="phone-cell-wrap">
         <a href="tel:${m.phone}" class="phone-icon-btn btn-call" title="Call ${m.phone}">📞</a>
-        <a href="https://wa.me/${cleanPhone}" target="_blank" rel="noopener" class="phone-icon-btn btn-wa" title="WhatsApp ${m.phone}">💬</a>
+        <button type="button" class="phone-icon-btn btn-wa" data-member-action="message" data-id="${m.id}" title="Message ${m.phone} on WhatsApp (copies card to clipboard)">💬</button>
         <button type="button" class="phone-icon-btn btn-share-wa" data-member-action="share-card" data-id="${m.id}" title="Share Member Loyalty Card on WhatsApp">💳</button>
         <span class="phone-number-text">${m.phone}</span>
       </div>`;
@@ -5041,6 +5094,7 @@ function onMemberActionClick(e) {
   if (action === "add") openCreditModal(id);
   if (action === "deduct") openDeductModal(id);
   if (action === "history") openHistoryModal(id);
+  if (action === "message") void messageMemberWithCard(id);
   if (action === "share-card") openMemberCardModal(id);
   if (action === "delete") {
     const m = state.members.find((x) => x.id === id);

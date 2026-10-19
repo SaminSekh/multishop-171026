@@ -321,6 +321,12 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary btn-action close-modal" data-tip="Close"><i class="fas fa-times"></i> Close</button>
+                <button class="btn btn-info btn-action" id="posEditInvoiceSaleBtn" data-tip="Edit Products & Payments">
+                    <i class="fas fa-edit"></i> Edit Sale
+                </button>
+                <button class="btn btn-success btn-action" id="posAddInvoiceMemberBtn" data-tip="Add Customer to Members Club">
+                    <i class="fas fa-user-plus"></i> Add Member
+                </button>
                 <button class="btn btn-warning btn-action" id="spinRewardBtn" data-tip="Spin & Win">
                     <i class="fas fa-gift"></i> Spin & Win
                 </button>
@@ -362,6 +368,136 @@
         </div>
     </div>
 
+    <!-- Edit Completed Sale Modal in POS -->
+    <div class="modal" id="posEditSaleModal">
+        <div class="modal-content" style="max-width: 860px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 24px 24px 0 0;">
+                <h3 style="color: white; margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-edit" style="color: #38bdf8;"></i> Edit Sale - <span id="posEditSaleInvoice" style="font-family: monospace; color: #7dd3fc;"></span>
+                </h3>
+                <button class="close-modal" style="color: white; background: rgba(255,255,255,0.15); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 22px 26px; max-height: calc(88vh - 140px); overflow-y: auto;">
+                <form id="posEditSaleForm" onsubmit="return false;">
+                    <input type="hidden" id="posEditSaleId">
+
+                    <!-- Sale Info & Customer Details -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 18px; margin-bottom: 18px;">
+                        <div style="font-weight: 700; font-size: 0.8rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-tag text-primary"></i> Customer &amp; Sale Info
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 0;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Buyer / Customer Name</label>
+                                <input type="text" id="posEditSaleBuyerName" class="form-control" placeholder="Walk-in Customer" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Phone Number</label>
+                                <input type="tel" id="posEditSaleBuyerPhone" class="form-control" placeholder="Mobile number" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 4px; display: block;">Payment Method</label>
+                                <select id="posEditSalePaymentMethod" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; background: white;">
+                                    <option value="cash">Cash</option>
+                                    <option value="credit">Credit / Khata</option>
+                                    <option value="card">Card</option>
+                                    <option value="digital">UPI / Digital</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products in this Sale -->
+                    <div style="margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                            <div style="font-weight: 700; font-size: 0.82rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-boxes text-primary"></i> Products in this Purchase (<span id="posEditSaleItemCount">0</span>)
+                            </div>
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                                <i class="fas fa-info-circle text-info"></i> Stock updates automatically when quantities change.
+                            </div>
+                        </div>
+
+                        <!-- Product Search Bar to Add New Product -->
+                        <div style="position: relative; margin-bottom: 12px;">
+                            <div style="position: relative;">
+                                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem;"></i>
+                                <input type="text" id="posEditSaleProductSearch" placeholder="Type product name or SKU to add more items to this sale..." autocomplete="off" style="width: 100%; padding: 9px 12px 9px 34px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem;">
+                            </div>
+                            <div id="posEditSaleSearchResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 10px; max-height: 220px; overflow-y: auto; z-index: 1050; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); margin-top: 4px;"></div>
+                        </div>
+
+                        <!-- Products Table -->
+                        <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                                <thead>
+                                    <tr style="background: #f1f5f9; border-bottom: 1px solid #e2e8f0; color: #475569; text-align: left;">
+                                        <th style="padding: 10px 14px; font-weight: 700;">Product</th>
+                                        <th style="padding: 10px 8px; font-weight: 700; width: 110px;">Qty</th>
+                                        <th style="padding: 10px 8px; font-weight: 700; width: 125px;">Unit Price</th>
+                                        <th style="padding: 10px 14px; font-weight: 700; width: 115px; text-align: right;">Total</th>
+                                        <th style="padding: 10px 8px; width: 44px; text-align: center;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="posEditSaleItemsBody">
+                                    <!-- Dynamically rendered items -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Totals, Received Amount, and Pending Amount -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 18px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">
+                                    <span>Items Subtotal:</span>
+                                    <strong id="posEditSaleSubtotal" style="color: #1e293b;">₹0.00</strong>
+                                </div>
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+                                    <label style="font-size: 0.85rem; color: #475569; margin: 0;">Discount Amount:</label>
+                                    <input type="number" id="posEditSaleDiscount" min="0" step="0.01" value="0" style="width: 110px; padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: right; font-weight: 600; font-size: 0.85rem;">
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 1rem; font-weight: 800; color: #0f172a; padding-top: 8px; border-top: 1px dashed #cbd5e1;">
+                                    <span>Final Bill Total:</span>
+                                    <span id="posEditSaleTotalDisplay" style="color: var(--primary, #2563eb);">₹0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Received & Pending Amount Inputs -->
+                            <div style="border-left: 1px solid #e2e8f0; padding-left: 18px; display: flex; flex-direction: column; justify-content: center; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #15803d; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <i class="fas fa-check-circle"></i> Received Amount (Amount Paid) *
+                                    </label>
+                                    <div style="position: relative;">
+                                        <span id="posEditSaleCurrencySymbol1" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #15803d; font-size: 0.85rem;">₹</span>
+                                        <input type="number" id="posEditSaleAmountPaid" min="0" step="0.01" required style="width: 100%; padding: 7px 10px 7px 24px; border: 2px solid #86efac; border-radius: 8px; font-size: 0.95rem; font-weight: 700; color: #166534; background: #f0fdf4;">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.8rem; font-weight: 700; color: #b91c1c; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <i class="fas fa-exclamation-circle"></i> Pending Amount (Credit / Due) *
+                                    </label>
+                                    <div style="position: relative;">
+                                        <span id="posEditSaleCurrencySymbol2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #b91c1c; font-size: 0.85rem;">₹</span>
+                                        <input type="number" id="posEditSalePendingAmount" min="0" step="0.01" style="width: 100%; padding: 7px 10px 7px 24px; border: 2px solid #fca5a5; border-radius: 8px; font-size: 0.95rem; font-weight: 700; color: #991b1b; background: #fef2f2;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="padding: 14px 26px; background: #ffffff; border-top: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn btn-secondary btn-action close-modal" data-tip="Cancel"><i class="fas fa-times"></i> Cancel</button>
+                <button class="btn btn-primary btn-action" id="posSaveSaleEditsBtn" data-tip="Save Changes">
+                    <i class="fas fa-save"></i> Save Sale Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- POS Members Club Action Lightbox Modal (Add / Deduct Points) -->
     <div class="modal" id="posMemberActionModal">
         <div class="modal-content" style="max-width: 480px; border-radius: 20px;">
@@ -387,6 +523,16 @@
 
                     <!-- ADD POINTS FIELDS -->
                     <div id="posAddPointsFields" style="display:none;">
+                        <div id="posNewMemberFields" style="display:none;">
+                            <div class="form-group" style="margin-bottom:14px;">
+                                <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Customer Name</label>
+                                <input type="text" id="posNewMemberNameInput" placeholder="Customer name" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:14px;">
+                                <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Phone Number</label>
+                                <input type="tel" id="posNewMemberPhoneInput" placeholder="Phone number" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;">
+                            </div>
+                        </div>
                         <div class="form-group" id="posAddMemberTypeGroup" style="margin-bottom:14px;display:none;">
                             <label style="font-size:0.85rem;font-weight:600;color:#334155;display:block;margin-bottom:4px;">Membership Type</label>
                             <select id="posAddMemberType" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9rem;outline:none;background:#fff;">
@@ -441,7 +587,7 @@
     <script src="js/auth.js"></script>
     <script src="js/menu-manager.js"></script>
     <script src="js/main.js?v=2"></script>
-    <script src="js/pos.js?v=20"></script>
+    <script src="js/pos.js?v=21"></script>
 </body>
 
 </html>
