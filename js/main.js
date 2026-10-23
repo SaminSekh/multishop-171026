@@ -56,6 +56,36 @@ function formatCurrency(amount, currencyCode = null) {
     }
 }
 
+// Profit / Loss helpers
+// Formula: (Selling Price - Cost Price) / Cost Price × 100
+function getProfitLoss(costPrice, sellingPrice) {
+    const cost = parseFloat(costPrice) || 0;
+    const sell = parseFloat(sellingPrice) || 0;
+    const amount = sell - cost;
+    const percent = cost > 0 ? (amount / cost) * 100 : 0;
+
+    return {
+        cost,
+        sell,
+        amount,
+        percent,
+        isProfit: amount > 0,
+        isLoss: amount < 0,
+        type: amount > 0 ? 'profit' : (amount < 0 ? 'loss' : 'none')
+    };
+}
+
+function formatProfitLossPercent(costPrice, sellingPrice, decimals = 1) {
+    const result = getProfitLoss(costPrice, sellingPrice);
+
+    if (result.cost <= 0) return '—';
+
+    const pct = Math.abs(result.percent).toFixed(decimals);
+    if (result.type === 'profit') return `Profit ${pct}%`;
+    if (result.type === 'loss') return `Loss ${pct}%`;
+    return `No Profit / Loss ${pct}%`;
+}
+
 function getCurrencySymbol(currencyCode = null) {
     const code = currencyCode || window.shopCurrency || 'INR';
     const locale = getLocaleForCurrency(code);

@@ -258,6 +258,7 @@ el.wheelCanvas = byId("wheelCanvas");
   el.memberFormType = byId("memberFormType");
   el.memberFormInitialCredits = byId("memberFormInitialCredits");
   el.memberInitialCreditsGroup = byId("memberInitialCreditsGroup");
+  el.memberCreditsFieldLabel = byId("memberCreditsFieldLabel");
   el.initialCreditsHint = byId("initialCreditsHint");
   el.memberFormNotes = byId("memberFormNotes");
   el.saveMemberBtn = byId("saveMemberBtn");
@@ -4067,8 +4068,30 @@ function openNewMemberModal(initialData = null) {
   renderMemberFormTypeOptions((initialData && initialData.type) || "Direct Member");
   el.memberFormInitialCredits.value = "";
   if (el.memberInitialCreditsGroup) el.memberInitialCreditsGroup.classList.remove("hidden");
+  if (el.memberCreditsFieldLabel) el.memberCreditsFieldLabel.textContent = "Initial Welcome Credits (Optional)";
   if (el.memberFormNotes) el.memberFormNotes.value = "";
   if (el.memberModalTitle) el.memberModalTitle.textContent = "Add New Member";
+  if (el.saveMemberBtn) el.saveMemberBtn.textContent = "Save Member";
+
+  el.memberModal.classList.remove("hidden");
+  el.memberModal.setAttribute("aria-hidden", "false");
+}
+
+function openEditMemberModal(memberId) {
+  if (!el.memberModal) return;
+  const m = state.members.find((x) => x.id === memberId);
+  if (!m) return;
+  el.memberFormId.value = m.id;
+  el.memberFormName.value = m.name || "";
+  el.memberFormPhone.value = m.phone || "";
+  syncMembershipTypesFromEditor();
+  renderMemberFormTypeOptions(m.type || "Direct Member");
+  el.memberFormInitialCredits.value = String(m.credits || 0);
+  if (el.memberInitialCreditsGroup) el.memberInitialCreditsGroup.classList.remove("hidden");
+  if (el.memberCreditsFieldLabel) el.memberCreditsFieldLabel.textContent = "Points / Credits Balance";
+  if (el.memberFormNotes) el.memberFormNotes.value = m.notes || "";
+  if (el.memberModalTitle) el.memberModalTitle.textContent = "Edit Member";
+  if (el.saveMemberBtn) el.saveMemberBtn.textContent = "Save Changes";
 
   el.memberModal.classList.remove("hidden");
   el.memberModal.setAttribute("aria-hidden", "false");
@@ -4853,8 +4876,7 @@ function renderMembersSection() {
     const actionsTd = document.createElement("td");
     actionsTd.className = "centered";
     actionsTd.innerHTML = `<div class="member-actions-group">
-      <button type="button" class="action-btn-sm btn-add-pts" data-member-action="add" data-id="${m.id}">+ Add Pts</button>
-      <button type="button" class="action-btn-sm btn-cash-out" data-member-action="deduct" data-id="${m.id}">- Redeem</button>
+      <button type="button" class="action-btn-sm btn-edit-member" data-member-action="edit" data-id="${m.id}" title="Edit Member"><i class="fas fa-pen"></i> <span>Edit</span></button>
       <button type="button" class="action-btn-sm btn-view-hist" data-member-action="history" data-id="${m.id}" title="View Transaction History"><i class="fas fa-eye"></i> <span>History</span></button>
       <button type="button" class="btn-icon-del" data-member-action="delete" data-id="${m.id}" title="Delete Member">🗑️</button>
     </div>`;
@@ -4956,10 +4978,11 @@ function updateDeductBanners() {
 
 function onSaveMemberSubmit(e) {
   e.preventDefault();
+  const editId = safeText(el.memberFormId.value);
   const name = safeText(el.memberFormName.value);
   const phone = safeText(el.memberFormPhone.value);
   const type = el.memberFormType.value || "Direct Member";
-  const initialCredits = Math.max(0, parseInt(el.memberFormInitialCredits.value || "0", 10));
+  const credits = Math.max(0, parseInt(el.memberFormInitialCredits.value || "0", 10));
   const notes = safeText(el.memberFormNotes.value);
 
   if (!name || !phone) {
@@ -4968,24 +4991,65 @@ function onSaveMemberSubmit(e) {
   }
 
   const nowIso = new Date().toISOString();
+
+  if (editId) {
+    const member = state.members.find((x) => x.id === editId);
+    if (!member) {
+      showToast("Member not found.", "error");
+      return;
+    }
+    const delta = credits - (member.credits || 0);
+    member.name = name;
+    member.phone = phone;
+    member.type = type;
+    member.notes = notes;
+    member.credits = credits;
+    member.updatedAtIso = nowIso;
+    member.synced = false;
+
+    if (!Array.isArray(member.ledger)) member.ledger = [];
+    if (delta !== 0) {
+      member.ledger.unshift({
+        id: uid(),
+        type: "ADJUST",
+        credits: delta,
+        cashValue: Math.abs(delta) / 100,
+        note: `Manual points correction (${delta > 0 ? "+" : ""}${delta})`,
+        dateTimeIso: nowIso,
+        balanceAfter: credits
+      });
+    }
+
+    persistMembers();
+    renderMembersSection();
+    checkCustomerMemberMatch();
+    el.memberModal.classList.add("hidden");
+    showToast(`Member ${member.name} updated successfully!`, "success");
+
+    if (getAppsScriptUrl()) {
+      void syncSaveMember(member);
+    }
+    return;
+  }
+
   const member = normalizeMember({
     id: uid(),
     name,
     phone,
     type,
-    credits: initialCredits,
-    lifetimeEarned: initialCredits,
+    credits,
+    lifetimeEarned: credits,
     notes,
     createdAtIso: nowIso,
     updatedAtIso: nowIso,
-    ledger: initialCredits > 0 ? [{
+    ledger: credits > 0 ? [{
       id: uid(),
       type: "CREDIT",
-      credits: initialCredits,
-      cashValue: initialCredits / 100,
+      credits,
+      cashValue: credits / 100,
       note: "Welcome bonus credits",
       dateTimeIso: nowIso,
-      balanceAfter: initialCredits
+      balanceAfter: credits
     }] : []
   });
 
@@ -5091,6 +5155,7 @@ function onMemberActionClick(e) {
   const id = btn.dataset.id;
   if (!id) return;
 
+  if (action === "edit") openEditMemberModal(id);
   if (action === "add") openCreditModal(id);
   if (action === "deduct") openDeductModal(id);
   if (action === "history") openHistoryModal(id);
@@ -5152,11 +5217,14 @@ function renderHistoryTable(member) {
 
   ledger.forEach((tx) => {
     const tr = document.createElement("tr");
-    const isCredit = tx.type === "CREDIT";
+    const isAdjust = tx.type === "ADJUST";
+    const signedCredits = isAdjust ? (tx.credits || 0) : tx.type === "CREDIT" ? (tx.credits || 0) : -(tx.credits || 0);
+    const isPositive = signedCredits >= 0;
+    const label = isAdjust ? "✎ Adjusted" : isPositive ? "+ Earned" : "- Redeemed";
 
     tr.innerHTML = `<td>${formatIsoDateTime(tx.dateTimeIso)}</td>
-      <td><span class="${isCredit ? "badge-tx-credit" : "badge-tx-debit"}">${isCredit ? "+ Earned" : "- Redeemed"}</span></td>
-      <td><strong>${isCredit ? "+" : "-"}${tx.credits} pts</strong></td>
+      <td><span class="${isPositive ? "badge-tx-credit" : "badge-tx-debit"}">${label}</span></td>
+      <td><strong>${isPositive ? "+" : "-"}${Math.abs(signedCredits)} pts</strong></td>
       <td>${formatAmount(tx.cashValue)}</td>
       <td>${tx.note || "—"}</td>
       <td>${tx.balanceAfter} pts</td>`;

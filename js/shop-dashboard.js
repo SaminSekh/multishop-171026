@@ -732,14 +732,15 @@ class ShopDashboardManager {
 
             const profitMarginEl = document.getElementById('profitMargin');
             if (profitMarginEl) {
-                profitMarginEl.textContent = `${profitMargin.toFixed(1)}%`;
+                profitMarginEl.textContent = formatProfitLossPercent(totalCost, totalSales);
+                profitMarginEl.style.color = realGrossProfit < 0 ? '#dc2626' : '#16a34a';
                 profitMarginEl.closest('.stat-card')?.setAttribute('data-breakdown', JSON.stringify([
-                    { label: 'Profit', value: formatCurrency(realGrossProfit) },
+                    { label: realGrossProfit < 0 ? 'Loss' : 'Profit', value: formatCurrency(realGrossProfit) },
                     { label: '÷ Cost of Goods', value: formatCurrency(totalCost) },
-                    { label: '× 100 = Markup %', value: profitMargin.toFixed(1) + '%' },
+                    { label: '× 100 = Profit / Loss %', value: profitMargin.toFixed(1) + '%' },
                     { label: '─────────────', value: '' },
-                    { label: 'Note: This is MARKUP', value: 'Profit ÷ Cost' },
-                    { label: 'Margin (Profit ÷ Revenue)', value: totalSales > 0 ? (realGrossProfit / totalSales * 100).toFixed(1) + '%' : '0%' },
+                    { label: 'Note: Calculated on cost price', value: '(Sell − Cost) ÷ Cost' },
+                    { label: 'Profit ÷ Revenue', value: totalSales > 0 ? (realGrossProfit / totalSales * 100).toFixed(1) + '%' : '0%' },
                 ]));
             }
 

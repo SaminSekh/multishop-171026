@@ -254,7 +254,7 @@
                         <i class="fas fa-hand-holding-usd"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>Total Profit</h3>
+                        <h3>Total Profit / Loss</h3>
                         <div class="value" id="totalProfit">0</div>
                         <div class="change" id="profitChange">+0%</div>
                     </div>
@@ -265,7 +265,7 @@
                         <i class="fas fa-percentage"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>Net Margin</h3>
+                        <h3>Profit / Loss %</h3>
                         <div class="value" id="profitMargin">0%</div>
                         <div class="change" id="marginChange">+0%</div>
                     </div>
@@ -282,7 +282,7 @@
                             <option value="total_orders">Total Orders</option>
                             <option value="profit_amount">Total Profit</option>
                             <option value="cost_amount">Total Cost</option>
-                            <option value="profit_margin">Profit Margin %</option>
+                            <option value="profit_margin">Profit / Loss %</option>
                             <option value="credit_sales">Credit Sales</option>
                             <option value="average_order">Average Order Value</option>
                         </select>
@@ -335,6 +335,7 @@
                             <th>Quantity</th>
                             <th>Buy Price</th>
                             <th>Total Amount</th>
+                            <th>Profit / Loss</th>
                             <th>Payment Method</th>
                             <th>Status</th>
                             <th>Sold By</th>
@@ -343,7 +344,7 @@
                     </thead>
                     <tbody id="salesTable">
                         <tr>
-                            <td colspan="12" class="text-center">Loading sales data...</td>
+                            <td colspan="13" class="text-center">Loading sales data...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -564,8 +565,8 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/menu-manager.js"></script>
-    <script src="js/main.js?v=2"></script>
-    <script src="js/sales.js?v=15"></script>
+    <script src="js/main.js?v=3"></script>
+    <script src="js/sales.js?v=16"></script>
 
     <!-- Stat Card Breakdown Tooltip -->
     <style>

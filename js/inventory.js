@@ -166,6 +166,14 @@ class InventoryManager {
             });
         }
 
+        const costSortFilter = document.getElementById('costSortFilter');
+        if (costSortFilter) {
+            costSortFilter.addEventListener('change', () => {
+                this.inventoryPage = 1;
+                this.renderProducts();
+            });
+        }
+
         // Save product button
         const saveProductBtn = document.getElementById('saveProductBtn');
         if (saveProductBtn) {
@@ -941,7 +949,8 @@ class InventoryManager {
             searchTerm: (document.getElementById('inventorySearch')?.value || '').toLowerCase().trim(),
             stockFilter: document.getElementById('stockFilter')?.value || 'all',
             categoryFilter: document.getElementById('categoryFilter')?.value || '',
-            typeFilter: document.getElementById('typeFilter')?.value || ''
+            typeFilter: document.getElementById('typeFilter')?.value || '',
+            costSort: document.getElementById('costSortFilter')?.value || 'default'
         };
     }
 
@@ -952,7 +961,7 @@ class InventoryManager {
     applyInventoryFilters(products = this.products) {
         const state = this.getInventoryFilterState();
 
-        return (products || []).filter(product => {
+        let filtered = (products || []).filter(product => {
             const name = (product.product_name || '').toLowerCase();
             const sku = (product.sku || '').toLowerCase();
             const description = (product.description || '').toLowerCase();
@@ -971,6 +980,45 @@ class InventoryManager {
 
             return matchesSearch && matchesStock && matchesCategory && matchesType;
         });
+
+        if (state.costSort && state.costSort !== 'default') {
+            filtered = [...filtered].sort((a, b) => {
+                const hasVariantsA = (a._variantCostValue > 0 || a._variantSellValue > 0 || a._metaSellValue !== undefined);
+                const hasVariantsB = (b._variantCostValue > 0 || b._variantSellValue > 0 || b._metaSellValue !== undefined);
+
+                const totalCostA = a._totalCostValue !== undefined ? a._totalCostValue : ((parseInt(a.stock) || 0) * (parseFloat(a.cost_price) || 0));
+                const totalCostB = b._totalCostValue !== undefined ? b._totalCostValue : ((parseInt(b.stock) || 0) * (parseFloat(b.cost_price) || 0));
+                const totalSellA = a._totalSellValue !== undefined ? a._totalSellValue : ((parseInt(a.stock) || 0) * (parseFloat(a.selling_price) || 0));
+                const totalSellB = b._totalSellValue !== undefined ? b._totalSellValue : ((parseInt(b.stock) || 0) * (parseFloat(b.selling_price) || 0));
+
+                const cpA = hasVariantsA
+                    ? (a._variantMinCost !== undefined ? a._variantMinCost : (parseFloat(a.cost_price) || 0))
+                    : (parseFloat(a.cost_price) || 0);
+                const cpB = hasVariantsB
+                    ? (b._variantMinCost !== undefined ? b._variantMinCost : (parseFloat(b.cost_price) || 0))
+                    : (parseFloat(b.cost_price) || 0);
+
+                const spA = hasVariantsA
+                    ? (a._variantMinSell !== undefined ? a._variantMinSell : (parseFloat(a.selling_price) || 0))
+                    : (parseFloat(a.selling_price) || 0);
+                const spB = hasVariantsB
+                    ? (b._variantMinSell !== undefined ? b._variantMinSell : (parseFloat(b.selling_price) || 0))
+                    : (parseFloat(b.selling_price) || 0);
+
+                const profitA = getProfitLoss(cpA, spA).percent;
+                const profitB = getProfitLoss(cpB, spB).percent;
+
+                if (state.costSort === 'cost_asc') return cpA - cpB || spA - spB;
+                if (state.costSort === 'cost_desc') return cpB - cpA || spB - spA;
+                if (state.costSort === 'sell_asc') return spA - spB || cpA - cpB;
+                if (state.costSort === 'sell_desc') return spB - spA || cpB - cpA;
+                if (state.costSort === 'profit_asc') return profitA - profitB || cpA - cpB;
+                if (state.costSort === 'profit_desc') return profitB - profitA || cpB - cpA;
+                return 0;
+            });
+        }
+
+        return filtered;
     }
 
     renderProducts() {
@@ -1043,24 +1091,18 @@ class InventoryManager {
                 sellDisplay = minS === maxS
                     ? formatCurrency(minS)
                     : `${formatCurrency(minS)} – ${formatCurrency(maxS)}`;
-                marginDisplay = totalCostVal > 0
-                    ? ((totalSellVal - totalCostVal) / totalCostVal * 100).toFixed(1) + '%'
-                    : '—';
+                marginDisplay = formatProfitLossPercent(totalCostVal, totalSellVal);
             } else {
                 const cp = parseFloat(product.cost_price) || 0;
                 const sp = parseFloat(product.selling_price) || 0;
                 costDisplay = formatCurrency(cp);
                 sellDisplay = formatCurrency(sp);
-                marginDisplay = cp > 0 ? ((sp - cp) / cp * 100).toFixed(1) + '%' : '0.0%';
+                marginDisplay = formatProfitLossPercent(cp, sp);
             }
 
             const profitMarginNum = hasVariants
-                ? (totalCostVal > 0
-                    ? ((totalSellVal - totalCostVal) / totalCostVal * 100)
-                    : 0)
-                : (product.cost_price > 0
-                    ? ((product.selling_price - product.cost_price) / product.cost_price * 100)
-                    : 0);
+                ? getProfitLoss(totalCostVal, totalSellVal).percent
+                : getProfitLoss(product.cost_price, product.selling_price).percent;
 
             let status = 'success';
             let statusText = `In Stock (${product.stock})`;
@@ -1114,7 +1156,7 @@ class InventoryManager {
                     <td><span class="cost-spoiler${this.costsRevealed ? ' revealed' : ''}" onclick="event.stopPropagation(); this.classList.toggle('revealed'); window.inventoryManager.syncCostToggleButton();" title="Click to reveal cost price">${costDisplay}</span></td>
                     <td>${sellDisplay}</td>
                     <td>
-                        <span class="profit-badge ${profitMarginNum > 0 ? 'positive' : 'negative'}">
+                        <span class="profit-badge ${profitMarginNum >= 0 ? 'positive' : 'negative'}">
                             ${marginDisplay}${hasVariants ? ' <small style="opacity:0.6;font-size:0.7em;">(avg)</small>' : ''}
                         </span>
                     </td>

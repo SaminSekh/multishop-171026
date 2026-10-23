@@ -1631,7 +1631,8 @@ class CreditManager {
 
                     const cp = parseFloat(p.cost_price) || 0;
                     const sp = parseFloat(p.selling_price) || 0;
-                    const markup = cp > 0 ? ((sp - cp) / cp * 100).toFixed(1) + '%' : '—';
+                    const markup = formatProfitLossPercent(cp, sp);
+                    const profitLoss = getProfitLoss(cp, sp);
                     const stockStatus = p.stock < 1 ? '🔴 Out of Stock' : p.stock < 10 ? '🟡 Low Stock (' + p.stock + ')' : '🟢 ' + p.stock + ' units';
 
                     popup.innerHTML = `<td colspan="4">
@@ -1652,8 +1653,8 @@ class CreditManager {
                                             <div style="font-weight:700;color:#1e293b;font-size:0.88rem;">${formatCurrency(sp)}</div>
                                         </div>
                                         <div style="background:#fff;border-radius:6px;padding:8px 10px;border:1px solid #e2e8f0;">
-                                            <div style="font-size:0.65rem;color:#94a3b8;text-transform:uppercase;margin-bottom:2px;">Markup</div>
-                                            <div style="font-weight:700;color:#16a34a;font-size:0.88rem;">${markup}</div>
+                                            <div style="font-size:0.65rem;color:#94a3b8;text-transform:uppercase;margin-bottom:2px;">Profit / Loss</div>
+                                            <div style="font-weight:700;color:${profitLoss.type === 'loss' ? '#dc2626' : '#16a34a'};font-size:0.88rem;">${markup}</div>
                                         </div>
                                     </div>
                                     <div style="margin-top:8px;font-size:0.78rem;color:#64748b;">${stockStatus}</div>

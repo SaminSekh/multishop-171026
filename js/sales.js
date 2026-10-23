@@ -588,7 +588,10 @@ class SalesManager {
         if (cashSalesEl) cashSalesEl.textContent = formatCurrency(cashTotal);
         if (totalCostEl) totalCostEl.textContent = formatCurrency(periodCost);
         if (totalProfitEl) totalProfitEl.textContent = formatCurrency(periodProfit);
-        if (profitMarginEl) profitMarginEl.textContent = `${periodMargin.toFixed(1)}%`;
+        if (profitMarginEl) {
+            profitMarginEl.textContent = formatProfitLossPercent(periodCost, periodTotal);
+            profitMarginEl.style.color = periodProfit < 0 ? '#dc2626' : '#16a34a';
+        }
         if (averageOrderEl) averageOrderEl.textContent = formatCurrency(avgOrder);
 
         // Attach breakdown tooltips to each stat card
@@ -642,15 +645,15 @@ class SalesManager {
             { label: 'Orders', value: periodOrders },
             { label: 'Revenue', value: formatCurrency(periodTotal) },
             { label: '− Cost of goods', value: formatCurrency(periodCost) },
-            { label: 'Gross profit', value: formatCurrency(periodProfit) },
-            { label: 'Profit margin', value: periodMargin.toFixed(1) + '%' },
+            { label: periodProfit < 0 ? 'Gross loss' : 'Gross profit', value: formatCurrency(periodProfit) },
+            { label: 'Profit / Loss %', value: formatProfitLossPercent(periodCost, periodTotal) },
         ]);
         bd('profitMargin', [
-            { label: 'Profit', value: formatCurrency(periodProfit) },
+            { label: periodProfit < 0 ? 'Loss' : 'Profit', value: formatCurrency(periodProfit) },
             { label: '÷ Cost of Goods', value: formatCurrency(periodCost) },
-            { label: '× 100 = Markup %', value: periodMargin.toFixed(1) + '%' },
+            { label: '× 100 = Profit / Loss %', value: periodMargin.toFixed(1) + '%' },
             { label: 'Revenue', value: formatCurrency(periodTotal) },
-            { label: 'Margin (Profit ÷ Revenue)', value: periodTotal > 0 ? (periodProfit / periodTotal * 100).toFixed(1) + '%' : '0%' },
+            { label: 'Profit ÷ Revenue', value: periodTotal > 0 ? (periodProfit / periodTotal * 100).toFixed(1) + '%' : '0%' },
         ]);
 
         // Update changes
@@ -763,7 +766,7 @@ class SalesManager {
 
             labels.push(displayDate);
 
-            const dayData = salesByDate[dateKey] || { total_amount: 0, total_orders: 0, credit_sales: 0, count: 0 };
+            const dayData = salesByDate[dateKey] || { total_amount: 0, total_orders: 0, total_cost: 0, total_profit: 0, credit_sales: 0, count: 0 };
 
             let value = 0;
             switch (metric) {
@@ -780,7 +783,7 @@ class SalesManager {
                     value = dayData.total_cost;
                     break;
                 case 'profit_margin':
-                    value = dayData.total_amount > 0 ? (dayData.total_profit / dayData.total_amount * 100) : 0;
+                    value = dayData.total_cost > 0 ? (dayData.total_profit / dayData.total_cost * 100) : 0;
                     break;
                 case 'credit_sales':
                     value = dayData.credit_sales;
@@ -820,7 +823,7 @@ class SalesManager {
             bgColorEnd = 'rgba(239, 71, 111, 0.05)';
             isCurrency = true;
         } else if (metric === 'profit_margin') {
-            label = 'Profit Margin %';
+            label = 'Profit / Loss %';
             borderColor = '#ffbc42';
             bgColorStart = 'rgba(255, 188, 66, 0.3)';
             bgColorEnd = 'rgba(255, 188, 66, 0.05)';
@@ -977,7 +980,7 @@ class SalesManager {
         if (pageSales.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="12" class="text-center">
+                    <td colspan="13" class="text-center">
                         <div class="empty-state">
                             <i class="fas fa-receipt fa-2x"></i>
                             <p>No sales found</p>
@@ -994,6 +997,7 @@ class SalesManager {
             // Calculate product count and names
             const productCount = sale.sale_items?.length || 0;
             const isSelected = this.selectedSales.has(sale.id);
+            const saleProfit = (parseFloat(sale.total_amount) || 0) - (parseFloat(sale.total_cost) || 0);
 
             return `
                 <tr class="${isSelected ? 'selected-row' : ''}">
@@ -1039,6 +1043,11 @@ class SalesManager {
                     <td>${sale.total_quantity || 0}</td>
                     <td><span class="cost-spoiler${this.costsRevealed ? ' revealed' : ''}" onclick="event.stopPropagation(); this.classList.toggle('revealed'); window.salesManager?.syncCostToggleButton();" title="Click to reveal buy price">${formatCurrency(sale.total_cost || 0)}</span></td>
                     <td>${formatCurrency(sale.total_amount)}</td>
+                    <td>
+                        <span class="profit-badge ${saleProfit >= 0 ? 'profit-up' : 'profit-down'}" title="${formatCurrency(saleProfit)}">
+                            ${formatProfitLossPercent(sale.total_cost, sale.total_amount)}
+                        </span>
+                    </td>
                     <td>
                         <span class="payment-method-badge ${sale.payment_method}">
                             ${(sale.payment_method || 'N/A').toUpperCase()}
@@ -1467,7 +1476,7 @@ class SalesManager {
                                     <i class="fas fa-trending-${isProfit ? 'up' : 'down'} me-1"></i>
                                     ${isProfit ? '+' : ''}${formatCurrency(stats.profit)}
                                 </div>
-                                <div class="extra-small text-muted mt-1 margin-label">${stats.profitPercent}% margin</div>
+                                <div class="extra-small text-muted mt-1 margin-label">${formatProfitLossPercent(stats.costPrice, item.unit_price)}</div>
                             </div>
                         </div>
                         
@@ -1573,7 +1582,7 @@ class SalesManager {
                 <!-- Final Totals -->
                 <div class="totals-section-modern p-4 rounded-3 mt-4" style="background: #f8f9fa; border: 1px dashed #dee2e6;">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small">Net Profit for this sale</span>
+                        <span class="text-muted small">Net Profit / Loss for this sale</span>
                         <span class="fw-bold ${totalProfit >= 0 ? 'text-success' : 'text-danger'}">
                             ${formatCurrency(totalProfit)}
                         </span>

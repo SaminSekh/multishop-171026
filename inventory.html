@@ -75,6 +75,16 @@
                         <option value="">All Types</option>
                     </select>
 
+                    <select id="costSortFilter" class="form-control">
+                        <option value="default">Default Order</option>
+                        <option value="cost_asc">Cost Price: Low to High</option>
+                        <option value="cost_desc">Cost Price: High to Low</option>
+                        <option value="sell_asc">Selling Price: Low to High</option>
+                        <option value="sell_desc">Selling Price: High to Low</option>
+                        <option value="profit_desc">Profit %: High to Low</option>
+                        <option value="profit_asc">Profit %: Low to High</option>
+                    </select>
+
                     <button class="btn btn-secondary cost-toggle-btn" id="toggleAllCosts" title="Reveal or hide all cost prices at once" aria-label="Toggle cost prices">
                         <i class="fas fa-eye-slash"></i>
                     </button>
@@ -147,7 +157,7 @@
                             <th>Stock</th>
                             <th>Cost Price</th>
                             <th>Selling Price</th>
-                            <th>Profit Margin</th>
+                            <th>Profit / Loss</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -284,8 +294,8 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/menu-manager.js"></script>
-    <script src="js/main.js?v=2"></script>
-    <script src="js/inventory.js?v=22"></script>
+    <script src="js/main.js?v=3"></script>
+    <script src="js/inventory.js?v=23"></script>
 
     <!-- Product Modal (Add/Edit) -->
     <div class="modal" id="productModal">
@@ -666,7 +676,8 @@
                     return s + c * (parseFloat(i.quantity)||0);
                 }, 0);
                 const totalProfit    = totalRevenue - totalCOGS;
-                const markup         = totalCOGS > 0 ? (totalProfit / totalCOGS * 100).toFixed(1)+'%' : '—';
+                const markup         = formatProfitLossPercent(totalCOGS, totalRevenue);
+                const markupValue    = getProfitLoss(totalCOGS, totalRevenue).percent;
 
                 // Days in stock
                 const createdAt = new Date(p.created_at || Date.now());
@@ -737,14 +748,14 @@
                         minSizeCp = minSizeCp === null ? sCp : Math.min(minSizeCp, sCp);
                         maxSizeCp = maxSizeCp === null ? sCp : Math.max(maxSizeCp, sCp);
 
-                        var sMgn = sCp > 0 ? ((sSp - sCp) / sCp * 100).toFixed(1) + '%' : '—';
+                        var sMgn = formatProfitLossPercent(sCp, sSp);
                         return '<div class="variant-row">'+
                             '<div class="vr-name">'+tagLabel+' '+s+'</div>'+
                             '<div class="vr-meta">'+
                                 '<span>📦 Stock: <strong>'+sStock+'</strong></span>'+
                                 '<span>💰 CP: <strong>'+formatCurrency(sCp)+'</strong></span>'+
                                 '<span>🏷️ SP: <strong>'+formatCurrency(sSp)+'</strong></span>'+
-                                '<span>📈 Margin: <strong>'+sMgn+'</strong></span>'+
+                                '<span>📈 Profit/Loss: <strong>'+sMgn+'</strong></span>'+
                                 '<span>💵 Value: <strong>'+formatCurrency(sStock * sSp)+'</strong></span>'+
                             '</div>'+
                         '</div>';
@@ -762,10 +773,11 @@
                 let totalStockCost = sizeStockCost + (unassignedBaseUnits * baseCp);
                 let totalStockSell = sizeStockSell + (unassignedBaseUnits * baseSp);
 
-                // Base product margin
-                const baseMargin = (baseSp <= 0 && sizeStockCost > 0 && sizeStockSell > 0)
-                    ? ((sizeStockSell - sizeStockCost) / sizeStockCost * 100).toFixed(1) + '%'
-                    : (baseCp > 0 ? ((baseSp - baseCp) / baseCp * 100).toFixed(1) + '%' : '—');
+                // Base product profit / loss
+                const baseMarginCost = (baseSp <= 0 && sizeStockCost > 0 && sizeStockSell > 0) ? sizeStockCost : baseCp;
+                const baseMarginSell = (baseSp <= 0 && sizeStockCost > 0 && sizeStockSell > 0) ? sizeStockSell : baseSp;
+                const baseMargin = formatProfitLossPercent(baseMarginCost, baseMarginSell);
+                const baseMarginValue = getProfitLoss(baseMarginCost, baseMarginSell).percent;
 
                 // Process DB variants (supporting variant size_stock, size_price, size_cost)
                 const variantStock = variants.reduce((s, v) => s + (parseInt(v.stock) || 0), 0);
@@ -834,7 +846,7 @@
                                 stock: qty,
                                 cp: effCp,
                                 sp: effSp,
-                                margin: effCp > 0 ? ((effSp - effCp) / effCp * 100).toFixed(1) + '%' : '—',
+                                margin: formatProfitLossPercent(effCp, effSp),
                                 value: qty * effSp
                             });
                         }
@@ -864,7 +876,7 @@
                         if (vMinSp !== baseSp || vMaxSp !== baseSp) hasVarPriceDiff = true;
                     }
 
-                    var vMgn = vCostTotal > 0 ? ((vSellTotal - vCostTotal) / vCostTotal * 100).toFixed(1) + '%' : '—';
+                    var vMgn = formatProfitLossPercent(vCostTotal, vSellTotal);
                     var attrStr = Object.entries(vAttrs)
                         .filter(function(e){
                             return !['variant_images','product_images','product_image','variant_group'].includes(e[0]) &&
@@ -894,7 +906,7 @@
                             '<span>📦 Stock: <strong>'+v.stock+'</strong></span>'+
                             '<span>💰 CP: <strong>'+formatCurrency(vCp)+'</strong></span>'+
                             '<span>🏷️ SP: <strong>'+spDisplay+'</strong></span>'+
-                            '<span>📈 Margin: <strong>'+vMgn+'</strong></span>'+
+                            '<span>📈 Profit/Loss: <strong>'+vMgn+'</strong></span>'+
                             '<span>💵 Value: <strong>'+formatCurrency(vSellTotal)+'</strong></span>'+
                         '</div>'+
                         subItemsHtml+
@@ -904,7 +916,8 @@
                 // Total units across all
                 const totalStock = (hasSizeStock ? Math.max(rawStock, sizeTrackedUnits) : rawStock) + variantStock;
                 const potentialProfit = totalStockSell - totalStockCost;
-                const totalStockMarkup = totalStockCost > 0 ? ((potentialProfit / totalStockCost) * 100).toFixed(1) + '%' : '—';
+                const totalStockMarkup = formatProfitLossPercent(totalStockCost, totalStockSell);
+                const totalStockMarkupValue = getProfitLoss(totalStockCost, totalStockSell).percent;
 
                 // Variants HTML
                 var variantsHtml = '';
@@ -961,20 +974,20 @@
                         row('Total Stock Cost (est.)', '<span>'+formatCurrency(totalStockCost)+'</span>', '')+
                         row('Total Stock Value (est.)', formatCurrency(totalStockSell), 'green')+
                         row('Potential Profit if Sold', formatCurrency(potentialProfit), potentialProfit >= 0 ? 'green' : 'red')+
-                        (totalStockCost > 0 ? row('Potential Stock Markup', totalStockMarkup, parseFloat(totalStockMarkup) >= 0 ? 'green' : 'red') : '')+
+                        (totalStockCost > 0 ? row('Potential Profit / Loss %', totalStockMarkup, totalStockMarkupValue >= 0 ? 'green' : 'red') : '')+
 
                         '<div class="ilb-section">Base Product Pricing</div>'+
                         row('Cost Price', '<span>'+formatCurrency(baseCp)+'</span>', '')+
                         row('Selling Price', sellingPriceDisplay, '')+
-                        row('Markup', baseMargin, parseFloat(baseMargin)>0?'green':'red')+
+                        row('Profit / Loss', baseMargin, baseMarginValue>=0?'green':'red')+
                         row('Base Stock', baseStockDisplay, '')+
 
                         '<div class="ilb-section">Sales Performance (All Time)</div>'+
                         row('Units Sold', totalUnitsSold, '')+
                         row('Total Revenue', formatCurrency(totalRevenue), 'green')+
                         row('Total COGS', '<span>'+formatCurrency(totalCOGS)+'</span>', '')+
-                        row('Gross Profit', formatCurrency(totalProfit), totalProfit>=0?'green':'red')+
-                        row('Markup %', markup, parseFloat(markup)>0?'green':'red')+
+                        row('Gross Profit / Loss', formatCurrency(totalProfit), totalProfit>=0?'green':'red')+
+                        row('Profit / Loss %', markup, markupValue>=0?'green':'red')+
 
                         sizesHtml+
                         variantsHtml+

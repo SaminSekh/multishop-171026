@@ -349,6 +349,90 @@ class SuperAdminManager {
         }
     }
 
+    async loadOverallProfitLoss(filter = 'all') {
+        try {
+            const dateRange = this.getDateRange(filter);
+            let salesQuery = supabaseClient
+                .from('sales')
+                .select('id, total_amount, discount_amount');
+
+            if (dateRange.start) {
+                salesQuery = salesQuery.gte('created_at', dateRange.start);
+                if (dateRange.end) salesQuery = salesQuery.lte('created_at', dateRange.end);
+            }
+
+            const { data: sales, error } = await salesQuery;
+            if (error) throw error;
+
+            const salesList = sales || [];
+            let totalSales = 0;
+            let totalProfit = 0;
+
+            if (salesList.length > 0) {
+                totalSales = salesList.reduce((sum, sale) => sum + (parseFloat(sale.total_amount) || 0), 0);
+                const saleIds = salesList.map(s => s.id);
+                const { data: items, error: itemsErr } = await supabaseClient
+                    .from('sale_items')
+                    .select('product_id, quantity, unit_price, cost_price')
+                    .in('sale_id', saleIds);
+
+                if (itemsErr) throw itemsErr;
+
+                const itemList = items || [];
+                const missingCostIds = [...new Set(itemList
+                    .filter(i => i.cost_price === null || i.cost_price === undefined)
+                    .map(i => i.product_id)
+                    .filter(Boolean))];
+
+                const productCosts = {};
+                if (missingCostIds.length > 0) {
+                    const { data: products } = await supabaseClient
+                        .from('products')
+                        .select('id, cost_price')
+                        .in('id', missingCostIds);
+                    (products || []).forEach(p => {
+                        productCosts[p.id] = parseFloat(p.cost_price) || 0;
+                    });
+                }
+
+                itemList.forEach(item => {
+                    const qty = parseInt(item.quantity) || 0;
+                    const sell = parseFloat(item.unit_price) || 0;
+                    const cost = (item.cost_price !== null && item.cost_price !== undefined)
+                        ? (parseFloat(item.cost_price) || 0)
+                        : (productCosts[item.product_id] || 0);
+                    totalProfit += (sell - cost) * qty;
+                });
+
+                const totalDiscounts = salesList.reduce((sum, sale) => sum + (parseFloat(sale.discount_amount) || 0), 0);
+                totalProfit -= totalDiscounts;
+            }
+
+            const totalCost = totalSales - totalProfit;
+            const amountEl = document.getElementById('overallProfitLoss');
+            const percentEl = document.getElementById('overallProfitLossPercent');
+            const labelEl = document.getElementById('overallProfitLossLabel');
+            const color = totalProfit < 0 ? '#dc2626' : '#16a34a';
+
+            if (amountEl) {
+                amountEl.textContent = formatCurrency(totalProfit);
+                amountEl.style.color = color;
+            }
+            if (percentEl) {
+                percentEl.textContent = (totalSales <= 0 && totalCost <= 0)
+                    ? '0%'
+                    : formatProfitLossPercent(totalCost, totalSales);
+                percentEl.style.color = color;
+            }
+            if (labelEl) {
+                const result = getProfitLoss(totalCost, totalSales);
+                labelEl.textContent = result.type === 'loss' ? 'Loss' : 'Profit';
+            }
+        } catch (err) {
+            console.error('Error loading overall profit/loss:', err);
+        }
+    }
+
     async loadDashboardData(filter = 'all') {
         showLoading(true);
 
@@ -356,6 +440,9 @@ class SuperAdminManager {
 
         // Load All-Time Shop Balance (independent of filters)
         this.loadTotalShopBalance();
+
+        // Load overall profit / loss for the selected period
+        this.loadOverallProfitLoss(filter);
 
         try {
             // Get date range based on filter
@@ -2506,7 +2593,10 @@ class SuperAdminManager {
                 }
             }
             const profitEl = document.getElementById('totalProfit');
-            if (profitEl) profitEl.textContent = formatCurrency(totalProfit);
+            if (profitEl) {
+                profitEl.textContent = formatCurrency(totalProfit);
+                profitEl.style.color = totalProfit < 0 ? '#dc2626' : '#16a34a';
+            }
 
             // Calculate Profit Margin (Markup)
             const totalCostForMargin = totalSales - totalProfit;
@@ -2517,7 +2607,9 @@ class SuperAdminManager {
                 profitMargin = 100;
             }
             if (document.getElementById('profitMargin')) {
-                document.getElementById('profitMargin').textContent = `${profitMargin.toFixed(1)}%`;
+                const profitMarginEl = document.getElementById('profitMargin');
+                profitMarginEl.textContent = formatProfitLossPercent(totalCostForMargin, totalSales);
+                profitMarginEl.style.color = totalProfit < 0 ? '#dc2626' : '#16a34a';
             }
 
             // 4. Get credit information (Filtered by dateRange)

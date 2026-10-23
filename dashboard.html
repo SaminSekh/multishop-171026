@@ -125,7 +125,7 @@
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Total Profit</h3>
+                            <h3>Total Profit / Loss</h3>
                             <div class="value" id="totalProfit">0.00</div>
                             <div class="change positive">Calculated</div>
                         </div>
@@ -136,9 +136,9 @@
                             <i class="fas fa-percent"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Profit Margin</h3>
+                            <h3>Profit / Loss %</h3>
                             <div class="value" id="profitMargin">0%</div>
-                            <div class="change info">Markup</div>
+                            <div class="change info">(Sell − Cost) ÷ Cost</div>
                         </div>
                     </div>
 
@@ -370,8 +370,8 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/menu-manager.js"></script>
-    <script src="js/main.js?v=2"></script>
-    <script src="js/shop-dashboard.js?v=3"></script>
+    <script src="js/main.js?v=3"></script>
+    <script src="js/shop-dashboard.js?v=4"></script>
 
     <!-- Stat Card Breakdown Tooltip -->
     <style>
@@ -602,9 +602,7 @@
         }
 
         function renderProduct(p, extra) {
-            var margin = p.cost_price > 0
-                ? ((p.selling_price - p.cost_price) / p.cost_price * 100).toFixed(1) + '%'
-                : '—';
+            var margin = formatProfitLossPercent(p.cost_price, p.selling_price);
             var stockStatus = p.stock < 1 ? '🔴 Out of Stock' : p.stock < 10 ? '🟡 Low Stock' : '🟢 In Stock';
 
             document.getElementById('dashLightbox').innerHTML =
@@ -618,7 +616,7 @@
                     '<div class="lb-section">Pricing</div>' +
                     '<div class="lb-row"><span class="lb-label">Cost Price</span><span class="lb-val">' + formatCurrency(p.cost_price || 0) + '</span></div>' +
                     '<div class="lb-row"><span class="lb-label">Selling Price</span><span class="lb-val">' + formatCurrency(p.selling_price || 0) + '</span></div>' +
-                    '<div class="lb-row"><span class="lb-label">Markup</span><span class="lb-val">' + margin + '</span></div>' +
+                    '<div class="lb-row"><span class="lb-label">Profit / Loss</span><span class="lb-val">' + margin + '</span></div>' +
                     '<div class="lb-section">Stock</div>' +
                     '<div class="lb-row"><span class="lb-label">Units in Stock</span><span class="lb-val">' + fmt(p.stock) + '</span></div>' +
                     '<div class="lb-row"><span class="lb-label">Status</span><span class="lb-val">' + stockStatus + '</span></div>' +
@@ -690,7 +688,7 @@
                         return s + c * (parseFloat(i.quantity)||0);
                     }, 0);
                     var profit = totalRev - totalCost;
-                    var markup = totalCost > 0 ? (profit/totalCost*100).toFixed(1)+'%' : '—';
+                    var markup = formatProfitLossPercent(totalCost, totalRev);
                     var avgPrice = totalQty > 0 ? totalRev/totalQty : 0;
                     var stockStatus = p.stock < 1 ? '🔴 Out of Stock' : p.stock < 10 ? '🟡 Low Stock ('+p.stock+')' : '🟢 '+p.stock+' units';
                     document.getElementById('dashLightbox').innerHTML =
@@ -705,8 +703,8 @@
                             '<div class="lb-row"><span class="lb-label">Total Units Sold</span><span class="lb-val">'+totalQty+' units</span></div>'+
                             '<div class="lb-row"><span class="lb-label">Total Revenue</span><span class="lb-val" style="color:#0f6425;">'+formatCurrency(totalRev)+'</span></div>'+
                             '<div class="lb-row"><span class="lb-label">Total Cost</span><span class="lb-val">'+formatCurrency(totalCost)+'</span></div>'+
-                            '<div class="lb-row"><span class="lb-label">Gross Profit</span><span class="lb-val" style="color:#0f6425;">'+formatCurrency(profit)+'</span></div>'+
-                            '<div class="lb-row"><span class="lb-label">Markup %</span><span class="lb-val">'+markup+'</span></div>'+
+                            '<div class="lb-row"><span class="lb-label">Gross Profit / Loss</span><span class="lb-val" style="color:'+(profit >= 0 ? '#0f6425' : '#dc2626')+';">'+formatCurrency(profit)+'</span></div>'+
+                            '<div class="lb-row"><span class="lb-label">Profit / Loss %</span><span class="lb-val">'+markup+'</span></div>'+
                             '<div class="lb-row"><span class="lb-label">Avg Sell Price</span><span class="lb-val">'+formatCurrency(avgPrice)+'</span></div>'+
                             '<div class="lb-section">Product Info</div>'+
                             '<div class="lb-row"><span class="lb-label">Cost Price</span><span class="lb-val">'+formatCurrency(p.cost_price||0)+'</span></div>'+

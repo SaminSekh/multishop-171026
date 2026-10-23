@@ -1850,9 +1850,8 @@ class POSManager {
 
         const baseSellingPrice = parseFloat(product.selling_price) || 0;
         const costPrice = parseFloat(product.cost_price) || 0;
-        const profitMargin = (costPrice > 0 && baseSellingPrice >= costPrice)
-            ? Math.round(((baseSellingPrice - costPrice) / costPrice) * 100)
-            : null;
+        const profitLoss = getProfitLoss(costPrice, baseSellingPrice);
+        const profitMargin = costPrice > 0 ? profitLoss.percent : null;
 
         const displayTotalStock = hasExplicitSizeStock ? totalSizeStock : (parseInt(product._baseStock || product.stock) || 0);
 
@@ -2157,7 +2156,7 @@ class POSManager {
                                     <span style="font-size:0.8rem;color:#64748b;">Cost: <span class="cost-spoiler" onclick="event.stopPropagation(); this.classList.toggle('revealed');" title="Click to reveal cost price">${formatCurrency(costPrice)}</span></span>
                                 ` : ''}
                                 ${profitMargin !== null ? `
-                                    <span style="font-size:0.72rem;font-weight:700;color:#16a34a;background:#dcfce7;padding:2px 7px;border-radius:6px;">${profitMargin}% Margin</span>
+                                    <span style="font-size:0.72rem;font-weight:700;color:${profitLoss.type === 'loss' ? '#dc2626' : '#16a34a'};background:${profitLoss.type === 'loss' ? '#fef2f2' : '#dcfce7'};padding:2px 7px;border-radius:6px;">${formatProfitLossPercent(costPrice, baseSellingPrice)}</span>
                                 ` : ''}
                             </div>
                             <div style="margin-top:6px;font-size:0.78rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">

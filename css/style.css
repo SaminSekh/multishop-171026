@@ -9892,6 +9892,16 @@ textarea {
   border-color: rgba(239, 68, 68, 0.7);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}.spin-page .btn-edit-member{
+  background: rgba(168, 85, 247, 0.16);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.35);
+}.spin-page .btn-edit-member:hover{
+  background: rgba(168, 85, 247, 0.32);
+  color: #fff;
+  border-color: rgba(168, 85, 247, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
 }.spin-page .btn-view-hist{
   background: rgba(59, 130, 246, 0.16);
   color: #93c5fd;
